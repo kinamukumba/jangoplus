@@ -166,7 +166,7 @@ function MissionPage() {
     const totalCorrect = counts.BIO.correct + counts.QUI.correct + counts.FIS.correct + counts.REV.correct;
     const total = counts.BIO.total + counts.QUI.total + counts.FIS.total + counts.REV.total;
     const totalScore = total === 0 ? 0 : Math.round((totalCorrect / total) * 100);
-    await completeMission(user.id, mission, { total: totalScore, perSubject });
+    await completeMission(user.id, mission, { total: totalScore, perSubject }, counts);
     navigate({ to: "/resultado" });
   };
 

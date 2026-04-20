@@ -106,7 +106,15 @@ export async function getOrCreateStats(userId: string): Promise<UserStats> {
       }
     }
 
-    const patch: Record<string, unknown> = {};
+    type StatsPatch = Partial<{
+      delay_days: number;
+      current_streak: number;
+      week_start_date: string;
+      weekly_xp: number;
+      weekly_missions: number;
+      updated_at: string;
+    }>;
+    const patch: StatsPatch = {};
     if (delay !== existing.delay_days) patch.delay_days = delay;
     if (streakReset) patch.current_streak = 0;
 

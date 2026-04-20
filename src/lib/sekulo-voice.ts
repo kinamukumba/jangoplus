@@ -99,4 +99,27 @@ export function statusLine(delay: number): string {
   return `Estás ${delay} dias atrasado.`;
 }
 
+export function levelUpMessage(level: number): string {
+  return `Subiste para nível ${level}. Mantém consistência.`;
+}
+
+export function streakLostMessage(): string {
+  return "Perdeste a sequência. Recomeça.";
+}
+
+export function streakBonusMessage(days: number): string {
+  if (days >= 7) return "7 dias seguidos. Não percas o ritmo.";
+  if (days >= 3) return "3 dias seguidos. Continua.";
+  return `${days} dias seguidos.`;
+}
+
+export function rankMessage(position: number | null, total: number): string {
+  if (!position) return "Ainda não apareces no ranking. Trabalha.";
+  if (position <= 3) return "Estás entre os melhores. Não afrouxes.";
+  if (position <= 10) return "Estás no top. Sobe mais.";
+  const pct = total > 0 ? position / total : 1;
+  if (pct <= 0.5) return "Estás no meio da tabela. Podes mais.";
+  return "Estás abaixo do nível necessário.";
+}
+
 export const SUBJECT_ORDER: SubjectCode[] = ["BIO", "QUI", "FIS", "REV"];

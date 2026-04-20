@@ -23,7 +23,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { SekuloMessage } from "@/components/sekulo/SekuloMessage";
 import { Stat } from "@/components/sekulo/Stat";
+import { XPBar } from "@/components/sekulo/XPBar";
 import { Progress } from "@/components/ui/progress";
+import { levelProgress } from "@/lib/progression";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -141,6 +143,11 @@ function HomePage() {
           </SekuloMessage>
         </section>
 
+        {/* XP & Nível */}
+        <section className="bg-card border border-border rounded-lg p-5">
+          <XPBar progress={levelProgress(stats.xp_total)} />
+        </section>
+
         {/* Stats de pressão */}
         <section className="grid grid-cols-2 gap-4 bg-card border border-border rounded-lg p-5">
           <Stat label="Sequência" value={`${stats.current_streak} dias`} tone="success" />
@@ -150,6 +157,22 @@ function HomePage() {
             tone={stats.delay_days > 0 ? "alert" : "neutral"}
           />
         </section>
+
+        {/* Link para ranking */}
+        <Link
+          to="/ranking"
+          className="block bg-card border border-border rounded-lg px-5 py-4 hover:bg-accent transition-colors"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="uppercase-tight text-[10px] text-muted-foreground">Esta semana</div>
+              <div className="font-display text-base font-bold mt-0.5">
+                {stats.weekly_xp} XP · {stats.weekly_missions} missões
+              </div>
+            </div>
+            <span className="uppercase-tight text-[10px] text-muted-foreground">Ver ranking →</span>
+          </div>
+        </Link>
 
         {/* Missão do dia */}
         <section>

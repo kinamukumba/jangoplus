@@ -1,6 +1,7 @@
 // Carrega/cria a missão diária e calcula sequência + atraso.
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_TARGETS, diffDays, todayISO, type SubjectCode } from "./sekulo-config";
+import { XP_RULES, levelForXp, weekStartISO, type XPKind } from "./progression";
 
 export interface DailyMission {
   id: string;
@@ -24,6 +25,11 @@ export interface UserStats {
   current_streak: number;
   delay_days: number;
   last_completed_date: string | null;
+  xp_total: number;
+  level: number;
+  weekly_xp: number;
+  weekly_missions: number;
+  week_start_date: string;
 }
 
 export const TARGET_FIELDS: Record<SubjectCode, keyof Pick<DailyMission, "bio_target" | "qui_target" | "fis_target" | "rev_target">> = {
@@ -53,19 +59,20 @@ export async function getOrCreateTodayMission(userId: string): Promise<DailyMiss
 
   if (existing) return existing as DailyMission;
 
-  // 2. Calcula consequência: aumenta carga se atrasado
+  // 2. Calcula consequência: aumenta carga se atrasado (+15% por dia, até +3 dias)
   const stats = await getOrCreateStats(userId);
-  const extraLoad = Math.min(stats.delay_days, 3); // até +3 por disciplina
+  const extraLoadPct = Math.min(stats.delay_days, 3) * 0.15;
+  const bump = (base: number) => Math.round(base * (1 + extraLoadPct));
 
   const { data: created, error } = await supabase
     .from("daily_missions")
     .insert({
       user_id: userId,
       mission_date: today,
-      bio_target: DEFAULT_TARGETS.BIO + extraLoad,
-      qui_target: DEFAULT_TARGETS.QUI + extraLoad,
-      fis_target: DEFAULT_TARGETS.FIS + extraLoad,
-      rev_target: DEFAULT_TARGETS.REV + extraLoad,
+      bio_target: bump(DEFAULT_TARGETS.BIO),
+      qui_target: bump(DEFAULT_TARGETS.QUI),
+      fis_target: bump(DEFAULT_TARGETS.FIS),
+      rev_target: bump(DEFAULT_TARGETS.REV),
     })
     .select("*")
     .single();
@@ -75,6 +82,7 @@ export async function getOrCreateTodayMission(userId: string): Promise<DailyMiss
 }
 
 export async function getOrCreateStats(userId: string): Promise<UserStats> {
+  const currentWeek = weekStartISO();
   const { data: existing } = await supabase
     .from("user_stats")
     .select("*")
@@ -82,31 +90,74 @@ export async function getOrCreateStats(userId: string): Promise<UserStats> {
     .maybeSingle();
 
   if (existing) {
-    // Recalcula atraso baseado no last_completed_date
     const today = todayISO();
     const lastDate = existing.last_completed_date;
     let delay = 0;
+    let streak = existing.current_streak;
+    let streakReset = false;
+
     if (lastDate) {
       const d = diffDays(lastDate, today);
-      // Se cumpriu ontem (d=1) ou hoje (d=0): sem atraso. Senão atraso = d-1.
       delay = Math.max(0, d - 1);
-    } else {
-      // Nunca completou: conta dias desde criação ~ aplicamos 0 inicial
-      delay = 0;
+      // Se passou mais de 1 dia sem cumprir, reset da sequência e penalização por falhar
+      if (d > 1 && streak > 0) {
+        streak = 0;
+        streakReset = true;
+      }
     }
-    if (delay !== existing.delay_days) {
-      await supabase
+
+    type StatsPatch = Partial<{
+      delay_days: number;
+      current_streak: number;
+      week_start_date: string;
+      weekly_xp: number;
+      weekly_missions: number;
+      updated_at: string;
+    }>;
+    const patch: StatsPatch = {};
+    if (delay !== existing.delay_days) patch.delay_days = delay;
+    if (streakReset) patch.current_streak = 0;
+
+    // Reset semanal
+    if (existing.week_start_date !== currentWeek) {
+      patch.week_start_date = currentWeek;
+      patch.weekly_xp = 0;
+      patch.weekly_missions = 0;
+    }
+
+    if (Object.keys(patch).length > 0) {
+      patch.updated_at = new Date().toISOString();
+      await supabase.from("user_stats").update(patch).eq("user_id", userId);
+      Object.assign(existing, patch);
+    }
+
+    // Penalização registada apenas uma vez (quando sequência foi perdida agora)
+    if (streakReset) {
+      await awardXp(userId, null, "mission_failed", XP_RULES.MISSION_FAILED);
+      // refresh total after penalty
+      const { data: refreshed } = await supabase
         .from("user_stats")
-        .update({ delay_days: delay, updated_at: new Date().toISOString() })
-        .eq("user_id", userId);
-      existing.delay_days = delay;
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (refreshed) Object.assign(existing, refreshed);
     }
+
     return existing as UserStats;
   }
 
   const { data: created, error } = await supabase
     .from("user_stats")
-    .insert({ user_id: userId, current_streak: 0, delay_days: 0 })
+    .insert({
+      user_id: userId,
+      current_streak: 0,
+      delay_days: 0,
+      xp_total: 0,
+      level: 1,
+      weekly_xp: 0,
+      weekly_missions: 0,
+      week_start_date: currentWeek,
+    })
     .select("*")
     .single();
 
@@ -136,12 +187,71 @@ export async function getAttemptCounts(missionId: string) {
   return counts;
 }
 
+// Regista evento de XP e atualiza user_stats (xp_total, level, weekly_xp).
+export async function awardXp(
+  userId: string,
+  missionId: string | null,
+  kind: XPKind,
+  amount: number,
+) {
+  if (amount === 0) return;
+  await supabase.from("xp_events").insert({
+    user_id: userId,
+    mission_id: missionId,
+    kind,
+    amount,
+  });
+
+  // Lê totais atuais e recalcula
+  const currentWeek = weekStartISO();
+  const { data: stats } = await supabase
+    .from("user_stats")
+    .select("xp_total, weekly_xp, week_start_date")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!stats) return;
+
+  const newXpTotal = Math.max(0, (stats.xp_total ?? 0) + amount);
+  const sameWeek = stats.week_start_date === currentWeek;
+  const newWeeklyXp = Math.max(0, sameWeek ? (stats.weekly_xp ?? 0) + amount : Math.max(0, amount));
+
+  await supabase
+    .from("user_stats")
+    .update({
+      xp_total: newXpTotal,
+      level: levelForXp(newXpTotal),
+      weekly_xp: newWeeklyXp,
+      week_start_date: currentWeek,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+}
+
+export interface MissionCompletionResult {
+  xpAwarded: number;
+  breakdown: {
+    base: number;
+    correct: number;
+    reviews: number;
+    streakBonus: number;
+  };
+  previousLevel: number;
+  newLevel: number;
+  leveledUp: boolean;
+  newStreak: number;
+  streakBonusKind: "streak_3" | "streak_7" | null;
+}
+
 export async function completeMission(
   userId: string,
   mission: DailyMission,
   scores: { total: number; perSubject: Record<SubjectCode, number> },
-) {
+  counts: Record<SubjectCode, { total: number; correct: number }>,
+): Promise<MissionCompletionResult> {
   const today = todayISO();
+
+  // 1. Marca missão como concluída
   await supabase
     .from("daily_missions")
     .update({
@@ -155,21 +265,102 @@ export async function completeMission(
     })
     .eq("id", mission.id);
 
-  // Atualiza streak: se last era ontem, +1; senão = 1
+  // 2. Idempotência: se já premiámos esta missão, devolve resumo
+  const { data: existingEvents } = await supabase
+    .from("xp_events")
+    .select("kind, amount")
+    .eq("mission_id", mission.id);
+
   const stats = await getOrCreateStats(userId);
-  let streak = 1;
+  const previousLevel = stats.level;
+
+  // Calcula nova streak
+  let newStreak = 1;
   if (stats.last_completed_date) {
     const d = diffDays(stats.last_completed_date, today);
-    if (d === 0) streak = stats.current_streak; // já cumpriu hoje
-    else if (d === 1) streak = stats.current_streak + 1;
+    if (d === 0) newStreak = stats.current_streak;
+    else if (d === 1) newStreak = stats.current_streak + 1;
   }
+
+  if (existingEvents && existingEvents.length > 0) {
+    // Já processada — retorna resumo do que foi atribuído
+    const base = existingEvents.find((e) => e.kind === "mission_complete")?.amount ?? 0;
+    const correct = existingEvents.filter((e) => e.kind === "correct_answer").reduce((s, e) => s + e.amount, 0);
+    const reviews = existingEvents.filter((e) => e.kind === "review").reduce((s, e) => s + e.amount, 0);
+    const s3 = existingEvents.find((e) => e.kind === "streak_3")?.amount ?? 0;
+    const s7 = existingEvents.find((e) => e.kind === "streak_7")?.amount ?? 0;
+    const streakBonus = s3 + s7;
+    return {
+      xpAwarded: base + correct + reviews + streakBonus,
+      breakdown: { base, correct, reviews, streakBonus },
+      previousLevel,
+      newLevel: stats.level,
+      leveledUp: false,
+      newStreak: stats.current_streak,
+      streakBonusKind: s7 ? "streak_7" : s3 ? "streak_3" : null,
+    };
+  }
+
+  // 3. Calcula XP a atribuir
+  const correctTotal = counts.BIO.correct + counts.QUI.correct + counts.FIS.correct;
+  const reviewCorrect = counts.REV.correct;
+
+  const baseXp = XP_RULES.MISSION_COMPLETE;
+  const correctXp = correctTotal * XP_RULES.CORRECT_ANSWER;
+  const reviewXp = reviewCorrect * XP_RULES.REVIEW;
+
+  let streakBonusKind: "streak_3" | "streak_7" | null = null;
+  let streakBonus = 0;
+  // Bónus dado apenas quando atinge o marco (evita duplicação em dias consecutivos acima do marco)
+  if (newStreak === 7) {
+    streakBonus = XP_RULES.STREAK_7;
+    streakBonusKind = "streak_7";
+  } else if (newStreak === 3) {
+    streakBonus = XP_RULES.STREAK_3;
+    streakBonusKind = "streak_3";
+  }
+
+  // 4. Regista eventos individuais
+  if (baseXp) await awardXp(userId, mission.id, "mission_complete", baseXp);
+  if (correctXp) await awardXp(userId, mission.id, "correct_answer", correctXp);
+  if (reviewXp) await awardXp(userId, mission.id, "review", reviewXp);
+  if (streakBonus && streakBonusKind) {
+    await awardXp(userId, mission.id, streakBonusKind, streakBonus);
+  }
+
+  // 5. Atualiza stats (streak, delay, weekly_missions)
+  const { data: refreshed } = await supabase
+    .from("user_stats")
+    .select("weekly_missions, week_start_date, xp_total")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const currentWeek = weekStartISO();
+  const sameWeek = refreshed?.week_start_date === currentWeek;
+  const newWeeklyMissions = (sameWeek ? refreshed?.weekly_missions ?? 0 : 0) + 1;
+
   await supabase
     .from("user_stats")
     .update({
-      current_streak: streak,
+      current_streak: newStreak,
       delay_days: 0,
       last_completed_date: today,
+      weekly_missions: newWeeklyMissions,
+      week_start_date: currentWeek,
       updated_at: new Date().toISOString(),
     })
     .eq("user_id", userId);
+
+  const newXpTotal = refreshed?.xp_total ?? 0;
+  const newLevel = levelForXp(newXpTotal);
+
+  return {
+    xpAwarded: baseXp + correctXp + reviewXp + streakBonus,
+    breakdown: { base: baseXp, correct: correctXp, reviews: reviewXp, streakBonus },
+    previousLevel,
+    newLevel,
+    leveledUp: newLevel > previousLevel,
+    newStreak,
+    streakBonusKind,
+  };
 }

@@ -14,7 +14,209 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_missions: {
+        Row: {
+          bio_target: number
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          fis_target: number
+          id: string
+          mission_date: string
+          qui_target: number
+          rev_target: number
+          score_bio: number | null
+          score_fis: number | null
+          score_qui: number | null
+          score_rev: number | null
+          score_total: number | null
+          user_id: string
+        }
+        Insert: {
+          bio_target?: number
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          fis_target?: number
+          id?: string
+          mission_date: string
+          qui_target?: number
+          rev_target?: number
+          score_bio?: number | null
+          score_fis?: number | null
+          score_qui?: number | null
+          score_rev?: number | null
+          score_total?: number | null
+          user_id: string
+        }
+        Update: {
+          bio_target?: number
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          fis_target?: number
+          id?: string
+          mission_date?: string
+          qui_target?: number
+          rev_target?: number
+          score_bio?: number | null
+          score_fis?: number | null
+          score_qui?: number | null
+          score_rev?: number | null
+          score_total?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mission_attempts: {
+        Row: {
+          answered_at: string
+          id: string
+          is_correct: boolean
+          mission_id: string
+          question_id: string
+          selected_index: number
+          subject_code: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string
+          id?: string
+          is_correct: boolean
+          mission_id: string
+          question_id: string
+          selected_index: number
+          subject_code: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string
+          id?: string
+          is_correct?: boolean
+          mission_id?: string
+          question_id?: string
+          selected_index?: number
+          subject_code?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_attempts_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "daily_missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_attempts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          correct_index: number
+          created_at: string
+          explanation: string | null
+          id: string
+          options: Json
+          statement: string
+          subject_id: string
+        }
+        Insert: {
+          correct_index: number
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options: Json
+          statement: string
+          subject_id: string
+        }
+        Update: {
+          correct_index?: number
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          options?: Json
+          statement?: string
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          code: string
+          daily_target: number
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          daily_target?: number
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          daily_target?: number
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          current_streak: number
+          delay_days: number
+          last_completed_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          delay_days?: number
+          last_completed_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          delay_days?: number
+          last_completed_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

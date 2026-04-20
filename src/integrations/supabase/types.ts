@@ -198,31 +198,84 @@ export type Database = {
           current_streak: number
           delay_days: number
           last_completed_date: string | null
+          level: number
           updated_at: string
           user_id: string
+          week_start_date: string
+          weekly_missions: number
+          weekly_xp: number
+          xp_total: number
         }
         Insert: {
           current_streak?: number
           delay_days?: number
           last_completed_date?: string | null
+          level?: number
           updated_at?: string
           user_id: string
+          week_start_date?: string
+          weekly_missions?: number
+          weekly_xp?: number
+          xp_total?: number
         }
         Update: {
           current_streak?: number
           delay_days?: number
           last_completed_date?: string | null
+          level?: number
           updated_at?: string
+          user_id?: string
+          week_start_date?: string
+          weekly_missions?: number
+          weekly_xp?: number
+          xp_total?: number
+        }
+        Relationships: []
+      }
+      xp_events: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          kind: string
+          mission_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          kind: string
+          mission_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          mission_id?: string | null
           user_id?: string
         }
         Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      weekly_leaderboard: {
+        Row: {
+          current_streak: number | null
+          display_name: string | null
+          level: number | null
+          user_id: string | null
+          week_start_date: string | null
+          weekly_missions: number | null
+          weekly_xp: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      level_for_xp: { Args: { xp: number }; Returns: number }
     }
     Enums: {
       [_ in never]: never

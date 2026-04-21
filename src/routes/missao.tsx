@@ -27,12 +27,24 @@ interface Question {
   options: string[];
   correct_index: number;
   explanation: string | null;
+  difficulty?: string | null;
 }
 
-interface SubjectData {
+interface SubjectPool {
   code: SubjectCode;
   subject_id: string;
-  questions: Question[];
+  fresh: Question[]; // nunca respondidas nos últimos 30 dias
+  stale: Question[]; // já respondidas recentemente — usar só se acabar fresh
+  asked: Set<string>; // IDs já usados nesta sessão/missão
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 function MissionPage() {
@@ -40,7 +52,7 @@ function MissionPage() {
   const navigate = useNavigate();
 
   const [mission, setMission] = useState<DailyMission | null>(null);
-  const [pool, setPool] = useState<SubjectData[]>([]);
+  const [pools, setPools] = useState<Record<SubjectCode, SubjectPool> | null>(null);
   const [counts, setCounts] = useState<Record<SubjectCode, { total: number; correct: number }> | null>(null);
   const [current, setCurrent] = useState<{ q: Question; code: SubjectCode } | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
@@ -60,25 +72,52 @@ function MissionPage() {
         navigate({ to: "/resultado" });
         return;
       }
+
+      // 1. Disciplinas
       const { data: subs } = await supabase.from("subjects").select("id, code");
       const subjects = (subs ?? []) as { id: string; code: SubjectCode }[];
 
-      const pools: SubjectData[] = [];
+      // 2. Todas as questões em paralelo
+      const { data: allQs } = await supabase
+        .from("questions")
+        .select("id, subject_id, statement, options, correct_index, explanation, difficulty");
+      const allQuestions = (allQs ?? []) as Question[];
+
+      // 3. Histórico recente do utilizador (últimos 30 dias): para evitar repetição
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      const { data: recent } = await supabase
+        .from("mission_attempts")
+        .select("question_id")
+        .eq("user_id", user.id)
+        .gte("answered_at", since.toISOString());
+      const recentIds = new Set((recent ?? []).map((r) => r.question_id as string));
+
+      // 4. Questões já respondidas nesta missão (se o user saiu e voltou)
+      const { data: todayAttempts } = await supabase
+        .from("mission_attempts")
+        .select("question_id")
+        .eq("mission_id", m.id);
+      const askedToday = new Set((todayAttempts ?? []).map((r) => r.question_id as string));
+
+      const built: Record<SubjectCode, SubjectPool> = {} as Record<SubjectCode, SubjectPool>;
       for (const s of subjects) {
-        const { data: qs } = await supabase
-          .from("questions")
-          .select("id, subject_id, statement, options, correct_index, explanation")
-          .eq("subject_id", s.id);
-        pools.push({
+        const qs = allQuestions.filter((q) => q.subject_id === s.id);
+        const fresh = shuffle(qs.filter((q) => !recentIds.has(q.id) && !askedToday.has(q.id)));
+        const stale = shuffle(qs.filter((q) => recentIds.has(q.id) && !askedToday.has(q.id)));
+        built[s.code] = {
           code: s.code,
           subject_id: s.id,
-          questions: ((qs ?? []) as Question[]).sort(() => Math.random() - 0.5),
-        });
+          fresh,
+          stale,
+          asked: new Set(askedToday),
+        };
       }
+
       const c = await getAttemptCounts(m.id);
       if (!active) return;
       setMission(m);
-      setPool(pools);
+      setPools(built);
       setCounts(c);
     })();
     return () => {
@@ -86,9 +125,9 @@ function MissionPage() {
     };
   }, [user, navigate]);
 
-  // Decide próxima questão sempre que counts/pool muda
+  // Próxima questão
   useEffect(() => {
-    if (!mission || !counts || pool.length === 0) return;
+    if (!mission || !counts || !pools) return;
     if (current) return;
 
     const nextCode = SUBJECT_ORDER.find((code) => {
@@ -97,32 +136,60 @@ function MissionPage() {
     });
 
     if (!nextCode) {
-      // Tudo cumprido — finalizar
       void finish();
       return;
     }
 
-    const subjectPool = pool.find((p) => p.code === nextCode);
-    if (!subjectPool || subjectPool.questions.length === 0) {
-      // sem questões nessa disciplina — força próximo
-      // marca como cumprido virtualmente avançando counts
+    const p = pools[nextCode];
+    if (!p) {
+      // sem pool — marca como atingido para avançar
       setCounts((prev) => prev && { ...prev, [nextCode]: { ...prev[nextCode], total: mission[TARGET_FIELDS[nextCode]] } });
       return;
     }
 
-    // Pega questão (rotativo pelo total respondido)
-    const idx = counts[nextCode].total % subjectPool.questions.length;
-    setCurrent({ q: subjectPool.questions[idx], code: nextCode });
+    // Escolhe da pool fresh; se esgotada, usa stale
+    let q: Question | undefined;
+    while (p.fresh.length > 0) {
+      const cand = p.fresh.shift()!;
+      if (!p.asked.has(cand.id)) {
+        q = cand;
+        break;
+      }
+    }
+    if (!q) {
+      while (p.stale.length > 0) {
+        const cand = p.stale.shift()!;
+        if (!p.asked.has(cand.id)) {
+          q = cand;
+          break;
+        }
+      }
+    }
+
+    if (!q) {
+      // sem questões disponíveis nessa disciplina — avança objetivo
+      setCounts((prev) => prev && { ...prev, [nextCode]: { ...prev[nextCode], total: mission[TARGET_FIELDS[nextCode]] } });
+      return;
+    }
+
+    p.asked.add(q.id);
+    setCurrent({ q, code: nextCode });
     setSelected(null);
     setShowFeedback(false);
-  }, [mission, counts, pool, current]);
+  }, [mission, counts, pools, current]);
 
   const totalTarget = useMemo(
-    () => (mission ? mission.bio_target + mission.qui_target + mission.fis_target + mission.rev_target : 0),
+    () =>
+      mission
+        ? mission.bio_target + mission.qui_target + mission.fis_target + mission.lp_target + mission.rev_target
+        : 0,
     [mission],
   );
   const totalDone = useMemo(
-    () => (counts ? counts.BIO.total + counts.QUI.total + counts.FIS.total + counts.REV.total : 0),
+    () =>
+      counts
+        ? counts.BIO.total + counts.QUI.total + counts.FIS.total + counts.LP.total + counts.REV.total
+        : 0,
     [counts],
   );
 
@@ -161,10 +228,13 @@ function MissionPage() {
       BIO: percentSafe(counts.BIO),
       QUI: percentSafe(counts.QUI),
       FIS: percentSafe(counts.FIS),
+      LP: percentSafe(counts.LP),
       REV: percentSafe(counts.REV),
     };
-    const totalCorrect = counts.BIO.correct + counts.QUI.correct + counts.FIS.correct + counts.REV.correct;
-    const total = counts.BIO.total + counts.QUI.total + counts.FIS.total + counts.REV.total;
+    const totalCorrect =
+      counts.BIO.correct + counts.QUI.correct + counts.FIS.correct + counts.LP.correct + counts.REV.correct;
+    const total =
+      counts.BIO.total + counts.QUI.total + counts.FIS.total + counts.LP.total + counts.REV.total;
     const totalScore = total === 0 ? 0 : Math.round((totalCorrect / total) * 100);
     await completeMission(user.id, mission, { total: totalScore, perSubject }, counts);
     navigate({ to: "/resultado" });
@@ -183,7 +253,6 @@ function MissionPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top bar */}
       <header className="px-5 pt-5 pb-3 border-b border-border">
         <div className="flex items-center justify-between mb-2">
           <span className="uppercase-tight text-[10px] text-muted-foreground">
@@ -196,7 +265,6 @@ function MissionPage() {
         <Progress value={progressPct} className="h-1" />
       </header>
 
-      {/* Sekulo line */}
       {showFeedback && (
         <div className="px-5 pt-5">
           <SekuloMessage tone={isCorrect ? "success" : "alert"}>
@@ -205,7 +273,6 @@ function MissionPage() {
         </div>
       )}
 
-      {/* Question */}
       <main className="flex-1 px-5 pt-6 max-w-md mx-auto w-full">
         <h1 className="font-display text-xl leading-snug font-semibold mb-6">
           {current.q.statement}
@@ -250,7 +317,6 @@ function MissionPage() {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="px-5 py-5 border-t border-border bg-background sticky bottom-0">
         {!showFeedback ? (
           <Button

@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { todayISO, SUBJECT_LABELS, type SubjectCode } from "@/lib/sekulo-config";
-import { resultMessage, levelUpMessage, streakBonusMessage } from "@/lib/sekulo-voice";
+import { resultMessage, streakBonusMessage, rankDeltaMessage } from "@/lib/sekulo-voice";
 import { SekuloMessage } from "@/components/sekulo/SekuloMessage";
 import { Button } from "@/components/ui/button";
 import { Stat } from "@/components/sekulo/Stat";
+import { LeagueBadge } from "@/components/sekulo/LeagueBadge";
+import { DeltaBadge } from "@/components/sekulo/DeltaBadge";
+import { fetchRankInfo, type RankInfo } from "@/lib/ranking";
 
 export const Route = createFileRoute("/resultado")({
   component: ResultPage,

@@ -101,6 +101,23 @@ function ResultPage() {
         setStreak(stats.current_streak);
         setLevel(stats.level);
       }
+
+      // Impacto no ranking: compara com posição pré-missão guardada em sessionStorage
+      const info = await fetchRankInfo(user.id);
+      setRank(info);
+      try {
+        const raw = sessionStorage.getItem(`pre_rank_${mission.id}`);
+        if (raw) {
+          const pre = JSON.parse(raw) as { position: number };
+          if (pre.position > 0 && info.position > 0) {
+            setRankDelta(pre.position - info.position);
+          } else if (pre.position === 0 && info.position > 0) {
+            setRankDelta(info.total > 0 ? info.total - info.position + 1 : 0);
+          }
+        }
+      } catch {
+        // ignore
+      }
     })();
   }, [user, navigate]);
 

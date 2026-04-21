@@ -204,6 +204,39 @@ function ResultPage() {
           <Stat label="Nível" value={level} tone="neutral" />
         </section>
 
+        {/* Impacto no ranking */}
+        {rank && (
+          <section className="bg-card border border-border rounded-lg p-5">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <div className="uppercase-tight text-[10px] text-muted-foreground">
+                  Posição agora
+                </div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="font-display text-4xl font-bold tabular-nums">
+                    {rank.position > 0 ? `#${rank.position}` : "—"}
+                  </span>
+                  {rank.total > 0 && (
+                    <span className="text-mono text-xs text-muted-foreground">
+                      de {rank.total}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <DeltaBadge delta={rankDelta} />
+                </div>
+              </div>
+              <LeagueBadge league={rank.league} size="md" />
+            </div>
+            <SekuloMessage tone={rankDelta > 0 ? "success" : rankDelta < 0 ? "alert" : "neutral"}>
+              {rankDelta !== 0
+                ? rankDeltaMessage(rankDelta)
+                : rank.position > 0 && rank.position <= 10
+                  ? "Estás no top 10. Não saias daí."
+                  : "Posição mantida. Sobe mais."}
+            </SekuloMessage>
+          </section>
+        )}
         <section>
           <h2 className="uppercase-tight text-xs mb-3">Por disciplina</h2>
           <ul className="space-y-2">

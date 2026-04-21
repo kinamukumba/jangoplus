@@ -181,6 +181,36 @@ export type Database = {
           },
         ]
       }
+      rank_snapshots: {
+        Row: {
+          created_at: string
+          id: string
+          league: string
+          rank_position: number
+          user_id: string
+          week_start_date: string
+          weekly_xp: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          league: string
+          rank_position: number
+          user_id: string
+          week_start_date: string
+          weekly_xp: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          league?: string
+          rank_position?: number
+          user_id?: string
+          week_start_date?: string
+          weekly_xp?: number
+        }
+        Relationships: []
+      }
       subjects: {
         Row: {
           code: string
@@ -207,7 +237,10 @@ export type Database = {
           current_streak: number
           delay_days: number
           last_completed_date: string | null
+          last_week_xp: number
+          league: string
           level: number
+          previous_week_rank: number | null
           updated_at: string
           user_id: string
           week_start_date: string
@@ -219,7 +252,10 @@ export type Database = {
           current_streak?: number
           delay_days?: number
           last_completed_date?: string | null
+          last_week_xp?: number
+          league?: string
           level?: number
+          previous_week_rank?: number | null
           updated_at?: string
           user_id: string
           week_start_date?: string
@@ -231,7 +267,10 @@ export type Database = {
           current_streak?: number
           delay_days?: number
           last_completed_date?: string | null
+          last_week_xp?: number
+          league?: string
           level?: number
+          previous_week_rank?: number | null
           updated_at?: string
           user_id?: string
           week_start_date?: string
@@ -274,6 +313,7 @@ export type Database = {
         Row: {
           current_streak: number | null
           display_name: string | null
+          league: string | null
           level: number | null
           user_id: string | null
           week_start_date: string | null
@@ -284,7 +324,24 @@ export type Database = {
       }
     }
     Functions: {
+      get_user_rank: {
+        Args: { _user_id: string }
+        Returns: {
+          league: string
+          rank_position: number
+          total: number
+          weekly_xp: number
+        }[]
+      }
       level_for_xp: { Args: { xp: number }; Returns: number }
+      preview_rank_after_xp: {
+        Args: { _additional_xp: number; _user_id: string }
+        Returns: {
+          current_position: number
+          projected_position: number
+          total: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

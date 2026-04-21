@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { supabase } from "@/integrations/supabase/client";
 import {
   daysUntilExam,
   SUBJECT_LABELS,
@@ -10,6 +9,7 @@ import {
 import {
   homeMessage,
   statusLine,
+  preMissionMessage,
   type HomeState,
 } from "@/lib/sekulo-voice";
 import {
@@ -20,10 +20,19 @@ import {
   type DailyMission,
   type UserStats,
 } from "@/lib/mission";
+import {
+  fetchRankInfo,
+  previewMissionImpact,
+  estimateMissionXp,
+  rolloverWeekIfNeeded,
+  type RankInfo,
+  type RankPreview,
+} from "@/lib/ranking";
 import { Button } from "@/components/ui/button";
 import { SekuloMessage } from "@/components/sekulo/SekuloMessage";
 import { Stat } from "@/components/sekulo/Stat";
 import { XPBar } from "@/components/sekulo/XPBar";
+import { LeagueBadge } from "@/components/sekulo/LeagueBadge";
 import { Progress } from "@/components/ui/progress";
 import { levelProgress } from "@/lib/progression";
 
@@ -38,6 +47,8 @@ interface MissionState {
   totalAnswered: number;
   totalTarget: number;
   state: HomeState;
+  rank: RankInfo;
+  preview: RankPreview;
 }
 
 function HomePage() {
@@ -56,6 +67,7 @@ function HomePage() {
     if (!user) return;
     let active = true;
     (async () => {
+      await rolloverWeekIfNeeded(user.id);
       const stats = await getOrCreateStats(user.id);
       const mission = await getOrCreateTodayMission(user.id);
       const counts = await getAttemptCounts(mission.id);
@@ -69,8 +81,11 @@ function HomePage() {
       else if (totalAnswered > 0) state = "in_progress";
       else if (stats.delay_days > 0) state = "failed_yesterday";
 
+      const rank = await fetchRankInfo(user.id);
+      const preview = await previewMissionImpact(user.id, estimateMissionXp());
+
       if (active) {
-        setData({ mission, stats, counts, totalAnswered, totalTarget, state });
+        setData({ mission, stats, counts, totalAnswered, totalTarget, state, rank, preview });
       }
     })();
     return () => {

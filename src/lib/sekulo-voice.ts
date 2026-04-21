@@ -122,4 +122,4 @@ export function rankMessage(position: number | null, total: number): string {
   return "Estás abaixo do nível necessário.";
 }
 
-export const SUBJECT_ORDER: SubjectCode[] = ["BIO", "QUI", "FIS", "REV"];
+export const SUBJECT_ORDER: SubjectCode[] = ["BIO", "QUI", "FIS", "LP", "REV"];

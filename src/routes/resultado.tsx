@@ -17,6 +17,7 @@ interface Result {
   bio: number;
   qui: number;
   fis: number;
+  lp: number;
   rev: number;
 }
 
@@ -49,7 +50,7 @@ function ResultPage() {
     (async () => {
       const { data: mission } = await supabase
         .from("daily_missions")
-        .select("id, score_total, score_bio, score_qui, score_fis, score_rev, completed")
+        .select("id, score_total, score_bio, score_qui, score_fis, score_lp, score_rev, completed")
         .eq("user_id", user.id)
         .eq("mission_date", todayISO())
         .maybeSingle();
@@ -62,6 +63,7 @@ function ResultPage() {
         bio: Math.round(mission.score_bio ?? 0),
         qui: Math.round(mission.score_qui ?? 0),
         fis: Math.round(mission.score_fis ?? 0),
+        lp: Math.round(mission.score_lp ?? 0),
         rev: Math.round(mission.score_rev ?? 0),
       });
 
@@ -110,6 +112,7 @@ function ResultPage() {
     ["BIO", result.bio],
     ["QUI", result.qui],
     ["FIS", result.fis],
+    ["LP", result.lp],
     ["REV", result.rev],
   ];
 

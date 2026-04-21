@@ -22,11 +22,13 @@ export type Database = {
           created_at: string
           fis_target: number
           id: string
+          lp_target: number
           mission_date: string
           qui_target: number
           rev_target: number
           score_bio: number | null
           score_fis: number | null
+          score_lp: number | null
           score_qui: number | null
           score_rev: number | null
           score_total: number | null
@@ -39,11 +41,13 @@ export type Database = {
           created_at?: string
           fis_target?: number
           id?: string
+          lp_target?: number
           mission_date: string
           qui_target?: number
           rev_target?: number
           score_bio?: number | null
           score_fis?: number | null
+          score_lp?: number | null
           score_qui?: number | null
           score_rev?: number | null
           score_total?: number | null
@@ -56,11 +60,13 @@ export type Database = {
           created_at?: string
           fis_target?: number
           id?: string
+          lp_target?: number
           mission_date?: string
           qui_target?: number
           rev_target?: number
           score_bio?: number | null
           score_fis?: number | null
+          score_lp?: number | null
           score_qui?: number | null
           score_rev?: number | null
           score_total?: number | null
@@ -138,6 +144,7 @@ export type Database = {
         Row: {
           correct_index: number
           created_at: string
+          difficulty: string
           explanation: string | null
           id: string
           options: Json
@@ -147,6 +154,7 @@ export type Database = {
         Insert: {
           correct_index: number
           created_at?: string
+          difficulty?: string
           explanation?: string | null
           id?: string
           options: Json
@@ -156,6 +164,7 @@ export type Database = {
         Update: {
           correct_index?: number
           created_at?: string
+          difficulty?: string
           explanation?: string | null
           id?: string
           options?: Json

@@ -5,7 +5,6 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SekuloAvatar } from "@/components/sekulo/SekuloMessage";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -55,16 +54,29 @@ function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-5 py-10 bg-background">
       <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center text-center mb-8">
-          <SekuloAvatar size="lg" className="mb-4" />
-          <div className="uppercase-tight text-xs text-muted-foreground">JANGO+</div>
-          <h1 className="font-display text-3xl font-bold mt-1">SEKULO</h1>
+        {/* Identidade institucional Jango+ (sem Sekulo) */}
+        <div className="flex flex-col items-center text-center mb-10">
+          <div className="h-14 w-14 rounded-md bg-foreground text-background flex items-center justify-center font-display text-2xl font-bold mb-4">
+            J+
+          </div>
+          <h1 className="font-display text-4xl font-bold tracking-tight">Jango+</h1>
           <p className="text-sm text-muted-foreground mt-3 max-w-xs">
-            Não há atalhos. Há disciplina diária. Entra.
+            Plataforma de preparação para o exame de acesso ao ensino superior.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg p-6">
+          <div className="mb-2">
+            <h2 className="font-display text-lg font-semibold">
+              {mode === "signin" ? "Entrar" : "Criar conta"}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              {mode === "signin"
+                ? "Acede à tua conta para continuar o estudo."
+                : "Regista-te para começar a tua preparação."}
+            </p>
+          </div>
+
           {mode === "signup" && (
             <div className="space-y-1.5">
               <Label htmlFor="name" className="uppercase-tight text-[10px]">Nome</Label>

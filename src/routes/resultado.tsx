@@ -43,6 +43,8 @@ function ResultPage() {
   } | null>(null);
   const [streak, setStreak] = useState<number>(0);
   const [level, setLevel] = useState<number>(1);
+  const [rank, setRank] = useState<RankInfo | null>(null);
+  const [rankDelta, setRankDelta] = useState<number>(0);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });

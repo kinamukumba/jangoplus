@@ -308,7 +308,7 @@ export async function completeMission(
   }
 
   // 3. Calcula XP a atribuir
-  const correctTotal = counts.BIO.correct + counts.QUI.correct + counts.FIS.correct;
+  const correctTotal = counts.BIO.correct + counts.QUI.correct + counts.FIS.correct + counts.LP.correct;
   const reviewCorrect = counts.REV.correct;
 
   const baseXp = XP_RULES.MISSION_COMPLETE;

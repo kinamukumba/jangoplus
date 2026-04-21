@@ -122,4 +122,25 @@ export function rankMessage(position: number | null, total: number): string {
   return "Estás abaixo do nível necessário.";
 }
 
+// Variação de posição entre snapshots semanais ou intra-dia.
+export function rankDeltaMessage(delta: number): string {
+  if (delta > 0) return `Subiste ${delta} posiç${delta === 1 ? "ão" : "ões"}. Continua.`;
+  if (delta < 0) return `Caíste ${Math.abs(delta)} posiç${Math.abs(delta) === 1 ? "ão" : "ões"}. Recupera hoje.`;
+  return "Mesma posição. Não chega.";
+}
+
+// Antes de iniciar a missão: prevê impacto.
+export function preMissionMessage(currentPos: number, projectedPos: number): string {
+  if (currentPos === 0 && projectedPos > 0) {
+    return `Se cumprires hoje, entras no ranking em #${projectedPos}.`;
+  }
+  if (projectedPos < currentPos) {
+    return `Se cumprires hoje, sobes para #${projectedPos}.`;
+  }
+  if (projectedPos === currentPos) {
+    return `Se cumprires hoje, manténs a posição #${currentPos}.`;
+  }
+  return `Estás em #${currentPos}. Trabalha para subir.`;
+}
+
 export const SUBJECT_ORDER: SubjectCode[] = ["BIO", "QUI", "FIS", "LP", "REV"];

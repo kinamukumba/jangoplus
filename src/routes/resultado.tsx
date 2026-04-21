@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { todayISO, SUBJECT_LABELS, type SubjectCode } from "@/lib/sekulo-config";
-import { resultMessage, levelUpMessage, streakBonusMessage } from "@/lib/sekulo-voice";
+import { resultMessage, streakBonusMessage, rankDeltaMessage } from "@/lib/sekulo-voice";
 import { SekuloMessage } from "@/components/sekulo/SekuloMessage";
 import { Button } from "@/components/ui/button";
 import { Stat } from "@/components/sekulo/Stat";
+import { LeagueBadge } from "@/components/sekulo/LeagueBadge";
+import { DeltaBadge } from "@/components/sekulo/DeltaBadge";
+import { fetchRankInfo, type RankInfo } from "@/lib/ranking";
 
 export const Route = createFileRoute("/resultado")({
   component: ResultPage,
@@ -40,6 +43,8 @@ function ResultPage() {
   } | null>(null);
   const [streak, setStreak] = useState<number>(0);
   const [level, setLevel] = useState<number>(1);
+  const [rank, setRank] = useState<RankInfo | null>(null);
+  const [rankDelta, setRankDelta] = useState<number>(0);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -95,6 +100,23 @@ function ResultPage() {
       if (stats) {
         setStreak(stats.current_streak);
         setLevel(stats.level);
+      }
+
+      // Impacto no ranking: compara com posição pré-missão guardada em sessionStorage
+      const info = await fetchRankInfo(user.id);
+      setRank(info);
+      try {
+        const raw = sessionStorage.getItem(`pre_rank_${mission.id}`);
+        if (raw) {
+          const pre = JSON.parse(raw) as { position: number };
+          if (pre.position > 0 && info.position > 0) {
+            setRankDelta(pre.position - info.position);
+          } else if (pre.position === 0 && info.position > 0) {
+            setRankDelta(info.total > 0 ? info.total - info.position + 1 : 0);
+          }
+        }
+      } catch {
+        // ignore
       }
     })();
   }, [user, navigate]);
@@ -182,6 +204,39 @@ function ResultPage() {
           <Stat label="Nível" value={level} tone="neutral" />
         </section>
 
+        {/* Impacto no ranking */}
+        {rank && (
+          <section className="bg-card border border-border rounded-lg p-5">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <div className="uppercase-tight text-[10px] text-muted-foreground">
+                  Posição agora
+                </div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="font-display text-4xl font-bold tabular-nums">
+                    {rank.position > 0 ? `#${rank.position}` : "—"}
+                  </span>
+                  {rank.total > 0 && (
+                    <span className="text-mono text-xs text-muted-foreground">
+                      de {rank.total}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <DeltaBadge delta={rankDelta} />
+                </div>
+              </div>
+              <LeagueBadge league={rank.league} size="md" />
+            </div>
+            <SekuloMessage tone={rankDelta > 0 ? "success" : rankDelta < 0 ? "alert" : "neutral"}>
+              {rankDelta !== 0
+                ? rankDeltaMessage(rankDelta)
+                : rank.position > 0 && rank.position <= 10
+                  ? "Estás no top 10. Não saias daí."
+                  : "Posição mantida. Sobe mais."}
+            </SekuloMessage>
+          </section>
+        )}
         <section>
           <h2 className="uppercase-tight text-xs mb-3">Por disciplina</h2>
           <ul className="space-y-2">

@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { supabase } from "@/integrations/supabase/client";
 import {
   daysUntilExam,
   SUBJECT_LABELS,
@@ -10,6 +9,7 @@ import {
 import {
   homeMessage,
   statusLine,
+  preMissionMessage,
   type HomeState,
 } from "@/lib/sekulo-voice";
 import {
@@ -20,10 +20,19 @@ import {
   type DailyMission,
   type UserStats,
 } from "@/lib/mission";
+import {
+  fetchRankInfo,
+  previewMissionImpact,
+  estimateMissionXp,
+  rolloverWeekIfNeeded,
+  type RankInfo,
+  type RankPreview,
+} from "@/lib/ranking";
 import { Button } from "@/components/ui/button";
 import { SekuloMessage } from "@/components/sekulo/SekuloMessage";
 import { Stat } from "@/components/sekulo/Stat";
 import { XPBar } from "@/components/sekulo/XPBar";
+import { LeagueBadge } from "@/components/sekulo/LeagueBadge";
 import { Progress } from "@/components/ui/progress";
 import { levelProgress } from "@/lib/progression";
 
@@ -38,6 +47,8 @@ interface MissionState {
   totalAnswered: number;
   totalTarget: number;
   state: HomeState;
+  rank: RankInfo;
+  preview: RankPreview;
 }
 
 function HomePage() {
@@ -56,6 +67,7 @@ function HomePage() {
     if (!user) return;
     let active = true;
     (async () => {
+      await rolloverWeekIfNeeded(user.id);
       const stats = await getOrCreateStats(user.id);
       const mission = await getOrCreateTodayMission(user.id);
       const counts = await getAttemptCounts(mission.id);
@@ -69,8 +81,11 @@ function HomePage() {
       else if (totalAnswered > 0) state = "in_progress";
       else if (stats.delay_days > 0) state = "failed_yesterday";
 
+      const rank = await fetchRankInfo(user.id);
+      const preview = await previewMissionImpact(user.id, estimateMissionXp());
+
       if (active) {
-        setData({ mission, stats, counts, totalAnswered, totalTarget, state });
+        setData({ mission, stats, counts, totalAnswered, totalTarget, state, rank, preview });
       }
     })();
     return () => {
@@ -87,7 +102,7 @@ function HomePage() {
   }
 
   const days = daysUntilExam();
-  const { mission, stats, counts, totalAnswered, totalTarget, state } = data;
+  const { mission, stats, counts, totalAnswered, totalTarget, state, rank, preview } = data;
   const progressPct = Math.round((totalAnswered / totalTarget) * 100);
 
   const startMission = async () => {
@@ -158,21 +173,65 @@ function HomePage() {
           />
         </section>
 
-        {/* Link para ranking */}
+        {/* Card de ranking destacado: posição, liga, quanto falta */}
         <Link
           to="/ranking"
-          className="block bg-card border border-border rounded-lg px-5 py-4 hover:bg-accent transition-colors"
+          className="block bg-card border border-border rounded-lg p-5 hover:bg-accent transition-colors"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between mb-3">
             <div>
-              <div className="uppercase-tight text-[10px] text-muted-foreground">Esta semana</div>
-              <div className="font-display text-base font-bold mt-0.5">
-                {stats.weekly_xp} XP · {stats.weekly_missions} missões
+              <div className="uppercase-tight text-[10px] text-muted-foreground">A tua posição</div>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="font-display text-3xl font-bold tabular-nums">
+                  {rank.position > 0 ? `#${rank.position}` : "—"}
+                </span>
+                {rank.total > 0 && (
+                  <span className="text-mono text-xs text-muted-foreground">
+                    de {rank.total}
+                  </span>
+                )}
               </div>
             </div>
-            <span className="uppercase-tight text-[10px] text-muted-foreground">Ver ranking →</span>
+            <LeagueBadge league={rank.league} size="md" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <div className="uppercase-tight text-[10px] text-muted-foreground">Sobe 1 posição</div>
+              <div className="font-display text-sm font-bold mt-0.5 tabular-nums">
+                {rank.xpToNextPosition > 0 ? `+${rank.xpToNextPosition} XP` : "—"}
+              </div>
+            </div>
+            <div>
+              <div className="uppercase-tight text-[10px] text-muted-foreground">Top 10</div>
+              <div className="font-display text-sm font-bold mt-0.5 tabular-nums">
+                {rank.position > 0 && rank.position <= 10
+                  ? "Lá dentro"
+                  : rank.xpToTop10 > 0
+                    ? `+${rank.xpToTop10} XP`
+                    : "—"}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+            <span className="text-mono text-[11px] text-muted-foreground">
+              {stats.weekly_xp} XP esta semana
+            </span>
+            <span className="uppercase-tight text-[10px] text-muted-foreground">
+              Ver ranking →
+            </span>
           </div>
         </Link>
+
+        {/* Preview de impacto da missão */}
+        {!mission.completed && (
+          <section className="bg-card border border-border rounded-lg p-5">
+            <SekuloMessage tone={preview.delta > 0 ? "success" : "neutral"}>
+              {preMissionMessage(preview.current, preview.projected)}
+            </SekuloMessage>
+          </section>
+        )}
 
         {/* Missão do dia */}
         <section>

@@ -73,6 +73,18 @@ function MissionPage() {
         return;
       }
 
+      // Guarda posição pré-missão para mostrar impacto no /resultado
+      try {
+        const { data: rankRow } = await supabase.rpc("get_user_rank", { _user_id: user.id });
+        const r = (rankRow?.[0] ?? null) as { rank_position: number } | null;
+        sessionStorage.setItem(
+          `pre_rank_${m.id}`,
+          JSON.stringify({ position: r?.rank_position ?? 0 }),
+        );
+      } catch {
+        // ignore — não bloquear a missão
+      }
+
       // 1. Disciplinas
       const { data: subs } = await supabase.from("subjects").select("id, code");
       const subjects = (subs ?? []) as { id: string; code: SubjectCode }[];

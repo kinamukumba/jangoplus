@@ -10,6 +10,7 @@ export interface DailyMission {
   bio_target: number;
   qui_target: number;
   fis_target: number;
+  lp_target: number;
   rev_target: number;
   completed: boolean;
   completed_at: string | null;
@@ -17,6 +18,7 @@ export interface DailyMission {
   score_bio: number | null;
   score_qui: number | null;
   score_fis: number | null;
+  score_lp: number | null;
   score_rev: number | null;
 }
 
@@ -32,17 +34,19 @@ export interface UserStats {
   week_start_date: string;
 }
 
-export const TARGET_FIELDS: Record<SubjectCode, keyof Pick<DailyMission, "bio_target" | "qui_target" | "fis_target" | "rev_target">> = {
+export const TARGET_FIELDS: Record<SubjectCode, keyof Pick<DailyMission, "bio_target" | "qui_target" | "fis_target" | "lp_target" | "rev_target">> = {
   BIO: "bio_target",
   QUI: "qui_target",
   FIS: "fis_target",
+  LP: "lp_target",
   REV: "rev_target",
 };
 
-export const SCORE_FIELDS: Record<SubjectCode, keyof Pick<DailyMission, "score_bio" | "score_qui" | "score_fis" | "score_rev">> = {
+export const SCORE_FIELDS: Record<SubjectCode, keyof Pick<DailyMission, "score_bio" | "score_qui" | "score_fis" | "score_lp" | "score_rev">> = {
   BIO: "score_bio",
   QUI: "score_qui",
   FIS: "score_fis",
+  LP: "score_lp",
   REV: "score_rev",
 };
 
@@ -72,6 +76,7 @@ export async function getOrCreateTodayMission(userId: string): Promise<DailyMiss
       bio_target: bump(DEFAULT_TARGETS.BIO),
       qui_target: bump(DEFAULT_TARGETS.QUI),
       fis_target: bump(DEFAULT_TARGETS.FIS),
+      lp_target: bump(DEFAULT_TARGETS.LP),
       rev_target: bump(DEFAULT_TARGETS.REV),
     })
     .select("*")
@@ -175,6 +180,7 @@ export async function getAttemptCounts(missionId: string) {
     BIO: { total: 0, correct: 0 },
     QUI: { total: 0, correct: 0 },
     FIS: { total: 0, correct: 0 },
+    LP: { total: 0, correct: 0 },
     REV: { total: 0, correct: 0 },
   };
   (data ?? []).forEach((row) => {

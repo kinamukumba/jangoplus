@@ -23,12 +23,14 @@ export type Database = {
           fis_target: number
           id: string
           lp_target: number
+          mat_target: number
           mission_date: string
           qui_target: number
           rev_target: number
           score_bio: number | null
           score_fis: number | null
           score_lp: number | null
+          score_mat: number | null
           score_qui: number | null
           score_rev: number | null
           score_total: number | null
@@ -42,12 +44,14 @@ export type Database = {
           fis_target?: number
           id?: string
           lp_target?: number
+          mat_target?: number
           mission_date: string
           qui_target?: number
           rev_target?: number
           score_bio?: number | null
           score_fis?: number | null
           score_lp?: number | null
+          score_mat?: number | null
           score_qui?: number | null
           score_rev?: number | null
           score_total?: number | null
@@ -61,12 +65,14 @@ export type Database = {
           fis_target?: number
           id?: string
           lp_target?: number
+          mat_target?: number
           mission_date?: string
           qui_target?: number
           rev_target?: number
           score_bio?: number | null
           score_fis?: number | null
           score_lp?: number | null
+          score_mat?: number | null
           score_qui?: number | null
           score_rev?: number | null
           score_total?: number | null

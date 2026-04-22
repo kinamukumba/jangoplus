@@ -23,13 +23,14 @@ export function diffDays(fromISO: string, toISO: string): number {
   return Math.round((b - a) / (1000 * 60 * 60 * 24));
 }
 
-export type SubjectCode = "BIO" | "QUI" | "FIS" | "LP" | "REV";
+export type SubjectCode = "BIO" | "QUI" | "FIS" | "LP" | "MAT" | "REV";
 
 export const SUBJECT_LABELS: Record<SubjectCode, string> = {
   BIO: "Biologia",
   QUI: "Química",
   FIS: "Física",
   LP: "Língua Portuguesa",
+  MAT: "Matemática",
   REV: "Revisões",
 };
 
@@ -38,5 +39,6 @@ export const DEFAULT_TARGETS: Record<SubjectCode, number> = {
   QUI: 8,
   FIS: 8,
   LP: 8,
+  MAT: 8,
   REV: 4,
 };

@@ -84,9 +84,19 @@ function HomePage() {
       const mission = await getOrCreateTodayMission(user.id);
       const counts = await getAttemptCounts(mission.id);
       const totalAnswered =
-        counts.BIO.total + counts.QUI.total + counts.FIS.total + counts.LP.total + counts.REV.total;
+        counts.BIO.total +
+        counts.QUI.total +
+        counts.FIS.total +
+        counts.LP.total +
+        counts.MAT.total +
+        counts.REV.total;
       const totalTarget =
-        mission.bio_target + mission.qui_target + mission.fis_target + mission.lp_target + mission.rev_target;
+        mission.bio_target +
+        mission.qui_target +
+        mission.fis_target +
+        mission.lp_target +
+        mission.mat_target +
+        mission.rev_target;
 
       let state: HomeState = "not_started";
       if (mission.completed) state = "completed_today";
@@ -122,7 +132,9 @@ function HomePage() {
     navigate({ to: "/missao" });
   };
 
-  const subjects: SubjectCode[] = ["BIO", "QUI", "FIS", "LP", "REV"];
+  // Mostra apenas as disciplinas com target > 0 (definido pelo objetivo do aluno).
+  const allSubjects: SubjectCode[] = ["BIO", "QUI", "FIS", "LP", "MAT", "REV"];
+  const subjects = allSubjects.filter((code) => mission[TARGET_FIELDS[code]] > 0);
 
   return (
     <div className="min-h-screen bg-background pb-12">

@@ -21,6 +21,7 @@ interface Result {
   qui: number;
   fis: number;
   lp: number;
+  mat: number;
   rev: number;
 }
 
@@ -45,6 +46,7 @@ function ResultPage() {
   const [level, setLevel] = useState<number>(1);
   const [rank, setRank] = useState<RankInfo | null>(null);
   const [rankDelta, setRankDelta] = useState<number>(0);
+  const [missionTargets, setMissionTargets] = useState<Record<SubjectCode, number> | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -55,7 +57,9 @@ function ResultPage() {
     (async () => {
       const { data: mission } = await supabase
         .from("daily_missions")
-        .select("id, score_total, score_bio, score_qui, score_fis, score_lp, score_rev, completed")
+        .select(
+          "id, score_total, score_bio, score_qui, score_fis, score_lp, score_mat, score_rev, bio_target, qui_target, fis_target, lp_target, mat_target, rev_target, completed",
+        )
         .eq("user_id", user.id)
         .eq("mission_date", todayISO())
         .maybeSingle();
@@ -69,7 +73,16 @@ function ResultPage() {
         qui: Math.round(mission.score_qui ?? 0),
         fis: Math.round(mission.score_fis ?? 0),
         lp: Math.round(mission.score_lp ?? 0),
+        mat: Math.round(mission.score_mat ?? 0),
         rev: Math.round(mission.score_rev ?? 0),
+      });
+      setMissionTargets({
+        BIO: mission.bio_target,
+        QUI: mission.qui_target,
+        FIS: mission.fis_target,
+        LP: mission.lp_target,
+        MAT: mission.mat_target,
+        REV: mission.rev_target,
       });
 
       const { data: events } = await supabase
@@ -130,13 +143,18 @@ function ResultPage() {
   }
 
   const tone = result.total >= 60 ? "success" : "alert";
-  const subjectScores: Array<[SubjectCode, number]> = [
+  const allScores: Array<[SubjectCode, number]> = [
     ["BIO", result.bio],
     ["QUI", result.qui],
     ["FIS", result.fis],
     ["LP", result.lp],
+    ["MAT", result.mat],
     ["REV", result.rev],
   ];
+  // Filtra apenas disciplinas que fizeram parte da missão (target > 0).
+  const subjectScores = missionTargets
+    ? allScores.filter(([code]) => missionTargets[code] > 0)
+    : allScores;
 
   return (
     <div className="min-h-screen bg-background pb-12">

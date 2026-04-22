@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { SekuloMessage } from "@/components/sekulo/SekuloMessage";
 import { daysUntilExam, type SubjectCode } from "@/lib/sekulo-config";
+import { GOALS, normalizeGoal } from "@/lib/goals";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -79,19 +80,25 @@ function OnboardingPage() {
     })();
   }, [user, loading, navigate]);
 
-  // Carrega 3 perguntas (uma por disciplina-chave: BIO, FIS, LP) assim que entramos no diagnóstico
+  // Carrega 3 perguntas (uma por disciplina) baseadas no objetivo escolhido.
   useEffect(() => {
-    if (step !== "diagnostic" || questions.length > 0 || !user) return;
+    if (step !== "diagnostic" || questions.length > 0 || !user || !goal) return;
     (async () => {
-      const targetCodes: SubjectCode[] = ["BIO", "FIS", "LP"];
+      const goalKey = normalizeGoal(goal);
+      const targetCodes = GOALS[goalKey].diagnostic;
       const { data: subs } = await supabase
         .from("subjects")
         .select("id, code")
         .in("code", targetCodes);
       const subjects = (subs ?? []) as { id: string; code: SubjectCode }[];
 
+      // Mantém a ordem definida em GOALS[goal].diagnostic
+      const ordered = targetCodes
+        .map((code) => subjects.find((s) => s.code === code))
+        .filter((s): s is { id: string; code: SubjectCode } => Boolean(s));
+
       const picks: DiagQuestion[] = [];
-      for (const s of subjects) {
+      for (const s of ordered) {
         const { data: qs } = await supabase
           .from("questions")
           .select("id, subject_id, statement, options, correct_index")
@@ -105,7 +112,7 @@ function OnboardingPage() {
       }
       setQuestions(picks);
     })();
-  }, [step, questions.length, user]);
+  }, [step, questions.length, user, goal]);
 
   const totalQ = questions.length;
   const currentQ = questions[qIndex];

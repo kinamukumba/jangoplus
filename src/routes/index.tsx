@@ -132,7 +132,9 @@ function HomePage() {
     navigate({ to: "/missao" });
   };
 
-  const subjects: SubjectCode[] = ["BIO", "QUI", "FIS", "LP", "REV"];
+  // Mostra apenas as disciplinas com target > 0 (definido pelo objetivo do aluno).
+  const allSubjects: SubjectCode[] = ["BIO", "QUI", "FIS", "LP", "MAT", "REV"];
+  const subjects = allSubjects.filter((code) => mission[TARGET_FIELDS[code]] > 0);
 
   return (
     <div className="min-h-screen bg-background pb-12">

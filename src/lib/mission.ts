@@ -287,6 +287,8 @@ export async function completeMission(
       score_bio: scores.perSubject.BIO,
       score_qui: scores.perSubject.QUI,
       score_fis: scores.perSubject.FIS,
+      score_lp: scores.perSubject.LP,
+      score_mat: scores.perSubject.MAT,
       score_rev: scores.perSubject.REV,
     })
     .eq("id", mission.id);
@@ -328,7 +330,8 @@ export async function completeMission(
   }
 
   // 3. Calcula XP a atribuir
-  const correctTotal = counts.BIO.correct + counts.QUI.correct + counts.FIS.correct + counts.LP.correct;
+  const correctTotal =
+    counts.BIO.correct + counts.QUI.correct + counts.FIS.correct + counts.LP.correct + counts.MAT.correct;
   const reviewCorrect = counts.REV.correct;
 
   const baseXp = XP_RULES.MISSION_COMPLETE;

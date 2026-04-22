@@ -193,14 +193,24 @@ function MissionPage() {
   const totalTarget = useMemo(
     () =>
       mission
-        ? mission.bio_target + mission.qui_target + mission.fis_target + mission.lp_target + mission.rev_target
+        ? mission.bio_target +
+          mission.qui_target +
+          mission.fis_target +
+          mission.lp_target +
+          mission.mat_target +
+          mission.rev_target
         : 0,
     [mission],
   );
   const totalDone = useMemo(
     () =>
       counts
-        ? counts.BIO.total + counts.QUI.total + counts.FIS.total + counts.LP.total + counts.REV.total
+        ? counts.BIO.total +
+          counts.QUI.total +
+          counts.FIS.total +
+          counts.LP.total +
+          counts.MAT.total +
+          counts.REV.total
         : 0,
     [counts],
   );
@@ -241,12 +251,23 @@ function MissionPage() {
       QUI: percentSafe(counts.QUI),
       FIS: percentSafe(counts.FIS),
       LP: percentSafe(counts.LP),
+      MAT: percentSafe(counts.MAT),
       REV: percentSafe(counts.REV),
     };
     const totalCorrect =
-      counts.BIO.correct + counts.QUI.correct + counts.FIS.correct + counts.LP.correct + counts.REV.correct;
+      counts.BIO.correct +
+      counts.QUI.correct +
+      counts.FIS.correct +
+      counts.LP.correct +
+      counts.MAT.correct +
+      counts.REV.correct;
     const total =
-      counts.BIO.total + counts.QUI.total + counts.FIS.total + counts.LP.total + counts.REV.total;
+      counts.BIO.total +
+      counts.QUI.total +
+      counts.FIS.total +
+      counts.LP.total +
+      counts.MAT.total +
+      counts.REV.total;
     const totalScore = total === 0 ? 0 : Math.round((totalCorrect / total) * 100);
     await completeMission(user.id, mission, { total: totalScore, perSubject }, counts);
     navigate({ to: "/resultado" });

@@ -143,4 +143,4 @@ export function preMissionMessage(currentPos: number, projectedPos: number): str
   return `Estás em #${currentPos}. Trabalha para subir.`;
 }
 
-export const SUBJECT_ORDER: SubjectCode[] = ["BIO", "QUI", "FIS", "LP", "REV"];
+export const SUBJECT_ORDER: SubjectCode[] = ["BIO", "QUI", "FIS", "LP", "MAT", "REV"];

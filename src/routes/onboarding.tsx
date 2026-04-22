@@ -15,7 +15,7 @@ export const Route = createFileRoute("/onboarding")({
 
 type Step = "goal" | "university" | "diagnostic" | "result";
 
-const GOALS = [
+const GOAL_OPTIONS = [
   { value: "medicina", label: "Medicina" },
   { value: "engenharia", label: "Engenharia" },
   { value: "outro", label: "Outro" },

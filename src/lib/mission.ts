@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_TARGETS, diffDays, todayISO, type SubjectCode } from "./sekulo-config";
 import { XP_RULES, levelForXp, weekStartISO, type XPKind } from "./progression";
+import { normalizeGoal, targetsForGoal, type Goal } from "./goals";
 
 export interface DailyMission {
   id: string;
@@ -11,6 +12,7 @@ export interface DailyMission {
   qui_target: number;
   fis_target: number;
   lp_target: number;
+  mat_target: number;
   rev_target: number;
   completed: boolean;
   completed_at: string | null;
@@ -19,6 +21,7 @@ export interface DailyMission {
   score_qui: number | null;
   score_fis: number | null;
   score_lp: number | null;
+  score_mat: number | null;
   score_rev: number | null;
 }
 
@@ -34,21 +37,32 @@ export interface UserStats {
   week_start_date: string;
 }
 
-export const TARGET_FIELDS: Record<SubjectCode, keyof Pick<DailyMission, "bio_target" | "qui_target" | "fis_target" | "lp_target" | "rev_target">> = {
+export const TARGET_FIELDS: Record<SubjectCode, keyof Pick<DailyMission, "bio_target" | "qui_target" | "fis_target" | "lp_target" | "mat_target" | "rev_target">> = {
   BIO: "bio_target",
   QUI: "qui_target",
   FIS: "fis_target",
   LP: "lp_target",
+  MAT: "mat_target",
   REV: "rev_target",
 };
 
-export const SCORE_FIELDS: Record<SubjectCode, keyof Pick<DailyMission, "score_bio" | "score_qui" | "score_fis" | "score_lp" | "score_rev">> = {
+export const SCORE_FIELDS: Record<SubjectCode, keyof Pick<DailyMission, "score_bio" | "score_qui" | "score_fis" | "score_lp" | "score_mat" | "score_rev">> = {
   BIO: "score_bio",
   QUI: "score_qui",
   FIS: "score_fis",
   LP: "score_lp",
+  MAT: "score_mat",
   REV: "score_rev",
 };
+
+async function fetchUserGoal(userId: string): Promise<Goal> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("goal")
+    .eq("id", userId)
+    .maybeSingle();
+  return normalizeGoal(data?.goal ?? null);
+}
 
 export async function getOrCreateTodayMission(userId: string): Promise<DailyMission> {
   const today = todayISO();
@@ -66,18 +80,23 @@ export async function getOrCreateTodayMission(userId: string): Promise<DailyMiss
   // 2. Calcula consequência: aumenta carga se atrasado (+15% por dia, até +3 dias)
   const stats = await getOrCreateStats(userId);
   const extraLoadPct = Math.min(stats.delay_days, 3) * 0.15;
-  const bump = (base: number) => Math.round(base * (1 + extraLoadPct));
+  const bump = (base: number) => (base > 0 ? Math.max(1, Math.round(base * (1 + extraLoadPct))) : 0);
+
+  // 3. Distribui questões por disciplina conforme objetivo do aluno (pesos).
+  const goal = await fetchUserGoal(userId);
+  const targets = targetsForGoal(goal);
 
   const { data: created, error } = await supabase
     .from("daily_missions")
     .insert({
       user_id: userId,
       mission_date: today,
-      bio_target: bump(DEFAULT_TARGETS.BIO),
-      qui_target: bump(DEFAULT_TARGETS.QUI),
-      fis_target: bump(DEFAULT_TARGETS.FIS),
-      lp_target: bump(DEFAULT_TARGETS.LP),
-      rev_target: bump(DEFAULT_TARGETS.REV),
+      bio_target: bump(targets.BIO ?? DEFAULT_TARGETS.BIO),
+      qui_target: bump(targets.QUI ?? DEFAULT_TARGETS.QUI),
+      fis_target: bump(targets.FIS ?? DEFAULT_TARGETS.FIS),
+      lp_target: bump(targets.LP ?? DEFAULT_TARGETS.LP),
+      mat_target: bump(targets.MAT ?? 0),
+      rev_target: bump(targets.REV ?? 0),
     })
     .select("*")
     .single();
@@ -181,6 +200,7 @@ export async function getAttemptCounts(missionId: string) {
     QUI: { total: 0, correct: 0 },
     FIS: { total: 0, correct: 0 },
     LP: { total: 0, correct: 0 },
+    MAT: { total: 0, correct: 0 },
     REV: { total: 0, correct: 0 },
   };
   (data ?? []).forEach((row) => {

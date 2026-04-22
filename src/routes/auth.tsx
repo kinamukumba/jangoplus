@@ -21,7 +21,19 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/" });
+    if (loading || !user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("onboarded_at")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data?.onboarded_at) {
+        navigate({ to: "/" });
+      } else {
+        navigate({ to: "/onboarding" });
+      }
+    })();
   }, [user, loading, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {

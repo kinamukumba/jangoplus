@@ -125,18 +125,30 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          diagnostic_score: number | null
           display_name: string | null
+          goal: string | null
           id: string
+          onboarded_at: string | null
+          university: string | null
         }
         Insert: {
           created_at?: string
+          diagnostic_score?: number | null
           display_name?: string | null
+          goal?: string | null
           id: string
+          onboarded_at?: string | null
+          university?: string | null
         }
         Update: {
           created_at?: string
+          diagnostic_score?: number | null
           display_name?: string | null
+          goal?: string | null
           id?: string
+          onboarded_at?: string | null
+          university?: string | null
         }
         Relationships: []
       }

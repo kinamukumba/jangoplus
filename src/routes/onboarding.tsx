@@ -193,7 +193,7 @@ function OnboardingPage() {
           <ChoiceStep
             title="Qual é o teu objetivo?"
             subtitle="Escolhe o curso que pretendes seguir."
-            options={GOALS}
+            options={GOAL_OPTIONS}
             value={goal}
             onChange={setGoal}
             onNext={() => setStep("university")}

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResultadoRouteImport } from './routes/resultado'
 import { Route as RankingRouteImport } from './routes/ranking'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MissaoRouteImport } from './routes/missao'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ const ResultadoRoute = ResultadoRouteImport.update({
 const RankingRoute = RankingRouteImport.update({
   id: '/ranking',
   path: '/ranking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissaoRoute = MissaoRouteImport.update({
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/missao': typeof MissaoRoute
+  '/onboarding': typeof OnboardingRoute
   '/ranking': typeof RankingRoute
   '/resultado': typeof ResultadoRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/missao': typeof MissaoRoute
+  '/onboarding': typeof OnboardingRoute
   '/ranking': typeof RankingRoute
   '/resultado': typeof ResultadoRoute
 }
@@ -60,21 +68,36 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/missao': typeof MissaoRoute
+  '/onboarding': typeof OnboardingRoute
   '/ranking': typeof RankingRoute
   '/resultado': typeof ResultadoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/missao' | '/ranking' | '/resultado'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/missao'
+    | '/onboarding'
+    | '/ranking'
+    | '/resultado'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/missao' | '/ranking' | '/resultado'
-  id: '__root__' | '/' | '/auth' | '/missao' | '/ranking' | '/resultado'
+  to: '/' | '/auth' | '/missao' | '/onboarding' | '/ranking' | '/resultado'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/missao'
+    | '/onboarding'
+    | '/ranking'
+    | '/resultado'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   MissaoRoute: typeof MissaoRoute
+  OnboardingRoute: typeof OnboardingRoute
   RankingRoute: typeof RankingRoute
   ResultadoRoute: typeof ResultadoRoute
 }
@@ -93,6 +116,13 @@ declare module '@tanstack/react-router' {
       path: '/ranking'
       fullPath: '/ranking'
       preLoaderRoute: typeof RankingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/missao': {
@@ -123,6 +153,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   MissaoRoute: MissaoRoute,
+  OnboardingRoute: OnboardingRoute,
   RankingRoute: RankingRoute,
   ResultadoRoute: ResultadoRoute,
 }

@@ -67,6 +67,17 @@ function HomePage() {
     if (!user) return;
     let active = true;
     (async () => {
+      // Gate: redireciona para onboarding se ainda não terminou
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("onboarded_at")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!prof?.onboarded_at) {
+        navigate({ to: "/onboarding" });
+        return;
+      }
+
       await rolloverWeekIfNeeded(user.id);
       const stats = await getOrCreateStats(user.id);
       const mission = await getOrCreateTodayMission(user.id);

@@ -307,8 +307,12 @@ function MissionPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="px-5 pt-5 pb-3 border-b border-border">
         <div className="flex items-center justify-between mb-2">
-          <span className="uppercase-tight text-[10px] text-muted-foreground">
+          <span className="uppercase-tight text-[10px] text-muted-foreground flex items-center gap-2">
             {SUBJECT_LABELS[current.code]}
+            <span className="text-foreground/70">·</span>
+            <span className="text-foreground/80">
+              {BLOOM_PUBLIC[(current.q.bloom_level ?? 1) as BloomLevel]}
+            </span>
           </span>
           <span className="text-mono text-xs text-muted-foreground tabular-nums">
             {totalDone}/{totalTarget}
@@ -320,7 +324,9 @@ function MissionPage() {
       {showFeedback && (
         <div className="px-5 pt-5">
           <SekuloMessage tone={isCorrect ? "success" : "alert"}>
-            {isCorrect ? correctMessage(totalDone) : wrongMessage(totalDone)}
+            {isCorrect
+              ? correctMessage(totalDone)
+              : wrongByBloom((current.q.bloom_level ?? 1) as BloomLevel, totalDone)}
           </SekuloMessage>
         </div>
       )}

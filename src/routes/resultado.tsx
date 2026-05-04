@@ -10,6 +10,7 @@ import { Stat } from "@/components/sekulo/Stat";
 import { LeagueBadge } from "@/components/sekulo/LeagueBadge";
 import { DeltaBadge } from "@/components/sekulo/DeltaBadge";
 import { fetchRankInfo, type RankInfo } from "@/lib/ranking";
+import { BLOOM_PUBLIC, BLOOM_PARENT_DESCRIPTION, type BloomLevel } from "@/lib/bloom";
 
 export const Route = createFileRoute("/resultado")({
   component: ResultPage,
@@ -47,6 +48,7 @@ function ResultPage() {
   const [rank, setRank] = useState<RankInfo | null>(null);
   const [rankDelta, setRankDelta] = useState<number>(0);
   const [missionTargets, setMissionTargets] = useState<Record<SubjectCode, number> | null>(null);
+  const [bloomBreakdown, setBloomBreakdown] = useState<Record<BloomLevel, { total: number; correct: number }> | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -131,6 +133,24 @@ function ResultPage() {
       } catch {
         // ignore
       }
+
+      // Desempenho por competência (Bloom)
+      const { data: attempts } = await supabase
+        .from("mission_attempts")
+        .select("bloom_level, is_correct")
+        .eq("mission_id", mission.id);
+      const bb: Record<BloomLevel, { total: number; correct: number }> = {
+        1: { total: 0, correct: 0 },
+        2: { total: 0, correct: 0 },
+        3: { total: 0, correct: 0 },
+        4: { total: 0, correct: 0 },
+      };
+      (attempts ?? []).forEach((a) => {
+        const lvl = Math.min(4, Math.max(1, (a.bloom_level ?? 1) as number)) as BloomLevel;
+        bb[lvl].total++;
+        if (a.is_correct) bb[lvl].correct++;
+      });
+      setBloomBreakdown(bb);
     })();
   }, [user, navigate]);
 

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_TARGETS, diffDays, todayISO, type SubjectCode } from "./sekulo-config";
 import { XP_RULES, levelForXp, weekStartISO, type XPKind } from "./progression";
 import { normalizeGoal, targetsForGoal, type Goal } from "./goals";
+import { shouldUnlockNext, type BloomLevel } from "./bloom";
 
 export interface DailyMission {
   id: string;
@@ -380,6 +381,30 @@ export async function completeMission(
     })
     .eq("user_id", userId);
 
+  // 6. Avalia desbloqueio do próximo nível Bloom com base no desempenho do nível mais alto desta missão
+  const { data: bloomRows } = await supabase
+    .from("mission_attempts")
+    .select("bloom_level, is_correct")
+    .eq("mission_id", mission.id);
+  const { data: curStats } = await supabase
+    .from("user_stats")
+    .select("unlocked_bloom_level")
+    .eq("user_id", userId)
+    .maybeSingle();
+  const currentUnlocked = (curStats?.unlocked_bloom_level ?? 2) as BloomLevel;
+  const topRows = (bloomRows ?? []).filter(
+    (r) => (r.bloom_level ?? 1) === currentUnlocked,
+  );
+  const topAttempts = topRows.length;
+  const topCorrect = topRows.filter((r) => r.is_correct).length;
+  const topAccuracy = topAttempts === 0 ? 0 : topCorrect / topAttempts;
+  const nextUnlocked = shouldUnlockNext(currentUnlocked, topAccuracy, topAttempts);
+  if (nextUnlocked > currentUnlocked) {
+    await supabase
+      .from("user_stats")
+      .update({ unlocked_bloom_level: nextUnlocked, updated_at: new Date().toISOString() })
+      .eq("user_id", userId);
+  }
   const newXpTotal = refreshed?.xp_total ?? 0;
   const newLevel = levelForXp(newXpTotal);
 

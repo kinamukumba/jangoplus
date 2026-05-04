@@ -10,7 +10,8 @@ import {
   type DailyMission,
 } from "@/lib/mission";
 import { SUBJECT_LABELS, type SubjectCode } from "@/lib/sekulo-config";
-import { correctMessage, wrongMessage, SUBJECT_ORDER } from "@/lib/sekulo-voice";
+import { correctMessage, wrongByBloom, SUBJECT_ORDER } from "@/lib/sekulo-voice";
+import { sortByBloomAsc, BLOOM_PUBLIC, type BloomLevel } from "@/lib/bloom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { SekuloMessage } from "@/components/sekulo/SekuloMessage";
@@ -28,6 +29,7 @@ interface Question {
   correct_index: number;
   explanation: string | null;
   difficulty?: string | null;
+  bloom_level?: number | null;
 }
 
 interface SubjectPool {
@@ -92,8 +94,16 @@ function MissionPage() {
       // 2. Todas as questões em paralelo
       const { data: allQs } = await supabase
         .from("questions")
-        .select("id, subject_id, statement, options, correct_index, explanation, difficulty");
+        .select("id, subject_id, statement, options, correct_index, explanation, difficulty, bloom_level");
       const allQuestions = (allQs ?? []) as Question[];
+
+      // 2b. Nível Bloom desbloqueado pelo aluno
+      const { data: statsRow } = await supabase
+        .from("user_stats")
+        .select("unlocked_bloom_level")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const unlocked = (statsRow?.unlocked_bloom_level ?? 2) as number;
 
       // 3. Histórico recente do utilizador (últimos 30 dias): para evitar repetição
       const since = new Date();
@@ -114,9 +124,17 @@ function MissionPage() {
 
       const built: Record<SubjectCode, SubjectPool> = {} as Record<SubjectCode, SubjectPool>;
       for (const s of subjects) {
-        const qs = allQuestions.filter((q) => q.subject_id === s.id);
-        const fresh = shuffle(qs.filter((q) => !recentIds.has(q.id) && !askedToday.has(q.id)));
-        const stale = shuffle(qs.filter((q) => recentIds.has(q.id) && !askedToday.has(q.id)));
+        // Só usa questões cujo nível Bloom está desbloqueado
+        const qs = allQuestions.filter(
+          (q) => q.subject_id === s.id && (q.bloom_level ?? 1) <= unlocked,
+        );
+        // Ordena fácil → difícil dentro de cada bucket (fresh / stale)
+        const fresh = sortByBloomAsc(
+          shuffle(qs.filter((q) => !recentIds.has(q.id) && !askedToday.has(q.id))),
+        );
+        const stale = sortByBloomAsc(
+          shuffle(qs.filter((q) => recentIds.has(q.id) && !askedToday.has(q.id))),
+        );
         built[s.code] = {
           code: s.code,
           subject_id: s.id,
@@ -226,6 +244,7 @@ function MissionPage() {
       subject_code: current.code,
       selected_index: selected,
       is_correct: isCorrect,
+      bloom_level: (current.q.bloom_level ?? 1) as number,
     });
     setCounts((prev) =>
       prev && {
@@ -288,8 +307,12 @@ function MissionPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="px-5 pt-5 pb-3 border-b border-border">
         <div className="flex items-center justify-between mb-2">
-          <span className="uppercase-tight text-[10px] text-muted-foreground">
+          <span className="uppercase-tight text-[10px] text-muted-foreground flex items-center gap-2">
             {SUBJECT_LABELS[current.code]}
+            <span className="text-foreground/70">·</span>
+            <span className="text-foreground/80">
+              {BLOOM_PUBLIC[(current.q.bloom_level ?? 1) as BloomLevel]}
+            </span>
           </span>
           <span className="text-mono text-xs text-muted-foreground tabular-nums">
             {totalDone}/{totalTarget}
@@ -301,7 +324,9 @@ function MissionPage() {
       {showFeedback && (
         <div className="px-5 pt-5">
           <SekuloMessage tone={isCorrect ? "success" : "alert"}>
-            {isCorrect ? correctMessage(totalDone) : wrongMessage(totalDone)}
+            {isCorrect
+              ? correctMessage(totalDone)
+              : wrongByBloom((current.q.bloom_level ?? 1) as BloomLevel, totalDone)}
           </SekuloMessage>
         </div>
       )}

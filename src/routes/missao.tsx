@@ -94,8 +94,16 @@ function MissionPage() {
       // 2. Todas as questões em paralelo
       const { data: allQs } = await supabase
         .from("questions")
-        .select("id, subject_id, statement, options, correct_index, explanation, difficulty");
+        .select("id, subject_id, statement, options, correct_index, explanation, difficulty, bloom_level");
       const allQuestions = (allQs ?? []) as Question[];
+
+      // 2b. Nível Bloom desbloqueado pelo aluno
+      const { data: statsRow } = await supabase
+        .from("user_stats")
+        .select("unlocked_bloom_level")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const unlocked = (statsRow?.unlocked_bloom_level ?? 2) as number;
 
       // 3. Histórico recente do utilizador (últimos 30 dias): para evitar repetição
       const since = new Date();
@@ -116,9 +124,17 @@ function MissionPage() {
 
       const built: Record<SubjectCode, SubjectPool> = {} as Record<SubjectCode, SubjectPool>;
       for (const s of subjects) {
-        const qs = allQuestions.filter((q) => q.subject_id === s.id);
-        const fresh = shuffle(qs.filter((q) => !recentIds.has(q.id) && !askedToday.has(q.id)));
-        const stale = shuffle(qs.filter((q) => recentIds.has(q.id) && !askedToday.has(q.id)));
+        // Só usa questões cujo nível Bloom está desbloqueado
+        const qs = allQuestions.filter(
+          (q) => q.subject_id === s.id && (q.bloom_level ?? 1) <= unlocked,
+        );
+        // Ordena fácil → difícil dentro de cada bucket (fresh / stale)
+        const fresh = sortByBloomAsc(
+          shuffle(qs.filter((q) => !recentIds.has(q.id) && !askedToday.has(q.id))),
+        );
+        const stale = sortByBloomAsc(
+          shuffle(qs.filter((q) => recentIds.has(q.id) && !askedToday.has(q.id))),
+        );
         built[s.code] = {
           code: s.code,
           subject_id: s.id,

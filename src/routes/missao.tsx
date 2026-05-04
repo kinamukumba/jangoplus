@@ -244,6 +244,7 @@ function MissionPage() {
       subject_code: current.code,
       selected_index: selected,
       is_correct: isCorrect,
+      bloom_level: (current.q.bloom_level ?? 1) as number,
     });
     setCounts((prev) =>
       prev && {

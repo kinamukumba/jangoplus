@@ -10,7 +10,7 @@ import {
   type DailyMission,
 } from "@/lib/mission";
 import { SUBJECT_LABELS, type SubjectCode } from "@/lib/sekulo-config";
-import { correctMessage, wrongMessage, SUBJECT_ORDER } from "@/lib/sekulo-voice";
+import { correctMessage, wrongByBloom, SUBJECT_ORDER } from "@/lib/sekulo-voice";
 import { sortByBloomAsc, BLOOM_PUBLIC, type BloomLevel } from "@/lib/bloom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";

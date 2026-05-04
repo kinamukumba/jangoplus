@@ -80,6 +80,45 @@ export function wrongMessage(seed: number): string {
   );
 }
 
+// Mensagens diferentes consoante o nível Bloom da questão errada.
+// 1-2 = Base (memória/compreensão), 3 = Aplicar, 4 = Analisar.
+export function wrongByBloom(level: 1 | 2 | 3 | 4, seed: number): string {
+  switch (level) {
+    case 1:
+      return pick(
+        [
+          "Erro de base. Decora isto antes de avançar.",
+          "Falhaste no básico. Revê a matéria.",
+        ],
+        seed,
+      );
+    case 2:
+      return pick(
+        [
+          "Não entendeste o conceito. Lê a explicação.",
+          "Erro de compreensão. Volta à teoria.",
+        ],
+        seed,
+      );
+    case 3:
+      return pick(
+        [
+          "Sabes a teoria mas não aplicas. Treina mais problemas.",
+          "Falhaste na aplicação. Pratica este tipo de exercício.",
+        ],
+        seed,
+      );
+    case 4:
+      return pick(
+        [
+          "Faltou raciocínio. Analisa antes de responder.",
+          "Erro de análise. Pensa nos passos antes de escolher.",
+        ],
+        seed,
+      );
+  }
+}
+
 export function resultMessage(percent: number): string {
   if (percent >= 80) return "Estás no caminho certo.";
   if (percent >= 60) return "Aceitável. Não chega.";

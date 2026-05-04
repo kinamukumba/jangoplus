@@ -83,6 +83,7 @@ export type Database = {
       mission_attempts: {
         Row: {
           answered_at: string
+          bloom_level: number | null
           id: string
           is_correct: boolean
           mission_id: string
@@ -93,6 +94,7 @@ export type Database = {
         }
         Insert: {
           answered_at?: string
+          bloom_level?: number | null
           id?: string
           is_correct: boolean
           mission_id: string
@@ -103,6 +105,7 @@ export type Database = {
         }
         Update: {
           answered_at?: string
+          bloom_level?: number | null
           id?: string
           is_correct?: boolean
           mission_id?: string
@@ -160,6 +163,7 @@ export type Database = {
       }
       questions: {
         Row: {
+          bloom_level: number
           correct_index: number
           created_at: string
           difficulty: string
@@ -170,6 +174,7 @@ export type Database = {
           subject_id: string
         }
         Insert: {
+          bloom_level?: number
           correct_index: number
           created_at?: string
           difficulty?: string
@@ -180,6 +185,7 @@ export type Database = {
           subject_id: string
         }
         Update: {
+          bloom_level?: number
           correct_index?: number
           created_at?: string
           difficulty?: string
@@ -259,6 +265,7 @@ export type Database = {
           league: string
           level: number
           previous_week_rank: number | null
+          unlocked_bloom_level: number
           updated_at: string
           user_id: string
           week_start_date: string
@@ -274,6 +281,7 @@ export type Database = {
           league?: string
           level?: number
           previous_week_rank?: number | null
+          unlocked_bloom_level?: number
           updated_at?: string
           user_id: string
           week_start_date?: string
@@ -289,6 +297,7 @@ export type Database = {
           league?: string
           level?: number
           previous_week_rank?: number | null
+          unlocked_bloom_level?: number
           updated_at?: string
           user_id?: string
           week_start_date?: string

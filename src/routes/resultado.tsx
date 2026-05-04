@@ -275,6 +275,38 @@ function ResultPage() {
             </SekuloMessage>
           </section>
         )}
+        {bloomBreakdown && (
+          <section>
+            <h2 className="uppercase-tight text-xs mb-3">Por competência</h2>
+            <ul className="space-y-2">
+              {([1, 2, 3, 4] as BloomLevel[])
+                .filter((l) => bloomBreakdown[l].total > 0)
+                .map((l) => {
+                  const c = bloomBreakdown[l];
+                  const pct = Math.round((c.correct / c.total) * 100);
+                  const t =
+                    pct >= 70 ? "text-success" : pct >= 50 ? "text-warning" : "text-destructive";
+                  return (
+                    <li
+                      key={l}
+                      className="bg-card border border-border rounded-md px-4 py-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{BLOOM_PUBLIC[l]}</span>
+                        <span className={`text-mono text-sm tabular-nums ${t}`}>
+                          {c.correct}/{c.total} · {pct}%
+                        </span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {BLOOM_PARENT_DESCRIPTION[l]}
+                      </div>
+                    </li>
+                  );
+                })}
+            </ul>
+          </section>
+        )}
+
         <section>
           <h2 className="uppercase-tight text-xs mb-3">Por disciplina</h2>
           <ul className="space-y-2">

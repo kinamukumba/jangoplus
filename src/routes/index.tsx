@@ -295,6 +295,24 @@ function HomePage() {
           </ul>
         </section>
 
+        {/* Acessos: treino por tópico + simulado de exame passado */}
+        <section className="grid grid-cols-2 gap-2">
+          <Link
+            to="/treino"
+            className="bg-card border border-border rounded-lg p-4 hover:bg-accent transition-colors"
+          >
+            <div className="uppercase-tight text-[10px] text-muted-foreground">Treino</div>
+            <div className="font-display text-sm font-bold mt-1">Por tópico</div>
+          </Link>
+          <Link
+            to="/simulado"
+            className="bg-card border border-border rounded-lg p-4 hover:bg-accent transition-colors"
+          >
+            <div className="uppercase-tight text-[10px] text-muted-foreground">Simulado</div>
+            <div className="font-display text-sm font-bold mt-1">Exame passado</div>
+          </Link>
+        </section>
+
         {/* CTA */}
         <section className="pt-2">
           {mission.completed ? (

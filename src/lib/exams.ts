@@ -182,7 +182,7 @@ export async function finishExamAttempt(
   // Persiste pontos fracos no user_stats para a próxima missão priorizar
   await supabase
     .from("user_stats")
-    .update({ weak_topics: weakTopics, updated_at: new Date().toISOString() })
+    .update({ weak_topics: weakTopics as unknown as never, updated_at: new Date().toISOString() })
     .eq("user_id", userId);
 
   return { correct, total, score, weakTopics };

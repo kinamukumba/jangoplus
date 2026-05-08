@@ -30,6 +30,7 @@ interface Question {
   explanation: string | null;
   difficulty?: string | null;
   bloom_level?: number | null;
+  topic?: string | null;
 }
 
 interface SubjectPool {

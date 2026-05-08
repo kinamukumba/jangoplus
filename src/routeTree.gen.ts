@@ -9,13 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TreinoRouteImport } from './routes/treino'
 import { Route as ResultadoRouteImport } from './routes/resultado'
 import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MissaoRouteImport } from './routes/missao'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SimuladoIndexRouteImport } from './routes/simulado.index'
+import { Route as SimuladoExamIdRouteImport } from './routes/simulado.$examId'
+import { Route as TreinoSubjectTopicRouteImport } from './routes/treino.$subject.$topic'
+import { Route as SimuladoResultadoAttemptIdRouteImport } from './routes/simulado.resultado.$attemptId'
 
+const TreinoRoute = TreinoRouteImport.update({
+  id: '/treino',
+  path: '/treino',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResultadoRoute = ResultadoRouteImport.update({
   id: '/resultado',
   path: '/resultado',
@@ -46,6 +56,27 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SimuladoIndexRoute = SimuladoIndexRouteImport.update({
+  id: '/simulado/',
+  path: '/simulado/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SimuladoExamIdRoute = SimuladoExamIdRouteImport.update({
+  id: '/simulado/$examId',
+  path: '/simulado/$examId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TreinoSubjectTopicRoute = TreinoSubjectTopicRouteImport.update({
+  id: '/$subject/$topic',
+  path: '/$subject/$topic',
+  getParentRoute: () => TreinoRoute,
+} as any)
+const SimuladoResultadoAttemptIdRoute =
+  SimuladoResultadoAttemptIdRouteImport.update({
+    id: '/simulado/resultado/$attemptId',
+    path: '/simulado/resultado/$attemptId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +85,11 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/ranking': typeof RankingRoute
   '/resultado': typeof ResultadoRoute
+  '/treino': typeof TreinoRouteWithChildren
+  '/simulado/$examId': typeof SimuladoExamIdRoute
+  '/simulado/': typeof SimuladoIndexRoute
+  '/simulado/resultado/$attemptId': typeof SimuladoResultadoAttemptIdRoute
+  '/treino/$subject/$topic': typeof TreinoSubjectTopicRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +98,11 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/ranking': typeof RankingRoute
   '/resultado': typeof ResultadoRoute
+  '/treino': typeof TreinoRouteWithChildren
+  '/simulado/$examId': typeof SimuladoExamIdRoute
+  '/simulado': typeof SimuladoIndexRoute
+  '/simulado/resultado/$attemptId': typeof SimuladoResultadoAttemptIdRoute
+  '/treino/$subject/$topic': typeof TreinoSubjectTopicRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +112,11 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/ranking': typeof RankingRoute
   '/resultado': typeof ResultadoRoute
+  '/treino': typeof TreinoRouteWithChildren
+  '/simulado/$examId': typeof SimuladoExamIdRoute
+  '/simulado/': typeof SimuladoIndexRoute
+  '/simulado/resultado/$attemptId': typeof SimuladoResultadoAttemptIdRoute
+  '/treino/$subject/$topic': typeof TreinoSubjectTopicRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,8 +127,24 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/ranking'
     | '/resultado'
+    | '/treino'
+    | '/simulado/$examId'
+    | '/simulado/'
+    | '/simulado/resultado/$attemptId'
+    | '/treino/$subject/$topic'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/missao' | '/onboarding' | '/ranking' | '/resultado'
+  to:
+    | '/'
+    | '/auth'
+    | '/missao'
+    | '/onboarding'
+    | '/ranking'
+    | '/resultado'
+    | '/treino'
+    | '/simulado/$examId'
+    | '/simulado'
+    | '/simulado/resultado/$attemptId'
+    | '/treino/$subject/$topic'
   id:
     | '__root__'
     | '/'
@@ -91,6 +153,11 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/ranking'
     | '/resultado'
+    | '/treino'
+    | '/simulado/$examId'
+    | '/simulado/'
+    | '/simulado/resultado/$attemptId'
+    | '/treino/$subject/$topic'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -100,10 +167,21 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   RankingRoute: typeof RankingRoute
   ResultadoRoute: typeof ResultadoRoute
+  TreinoRoute: typeof TreinoRouteWithChildren
+  SimuladoExamIdRoute: typeof SimuladoExamIdRoute
+  SimuladoIndexRoute: typeof SimuladoIndexRoute
+  SimuladoResultadoAttemptIdRoute: typeof SimuladoResultadoAttemptIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/treino': {
+      id: '/treino'
+      path: '/treino'
+      fullPath: '/treino'
+      preLoaderRoute: typeof TreinoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/resultado': {
       id: '/resultado'
       path: '/resultado'
@@ -146,8 +224,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/simulado/': {
+      id: '/simulado/'
+      path: '/simulado'
+      fullPath: '/simulado/'
+      preLoaderRoute: typeof SimuladoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/simulado/$examId': {
+      id: '/simulado/$examId'
+      path: '/simulado/$examId'
+      fullPath: '/simulado/$examId'
+      preLoaderRoute: typeof SimuladoExamIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/treino/$subject/$topic': {
+      id: '/treino/$subject/$topic'
+      path: '/$subject/$topic'
+      fullPath: '/treino/$subject/$topic'
+      preLoaderRoute: typeof TreinoSubjectTopicRouteImport
+      parentRoute: typeof TreinoRoute
+    }
+    '/simulado/resultado/$attemptId': {
+      id: '/simulado/resultado/$attemptId'
+      path: '/simulado/resultado/$attemptId'
+      fullPath: '/simulado/resultado/$attemptId'
+      preLoaderRoute: typeof SimuladoResultadoAttemptIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
+
+interface TreinoRouteChildren {
+  TreinoSubjectTopicRoute: typeof TreinoSubjectTopicRoute
+}
+
+const TreinoRouteChildren: TreinoRouteChildren = {
+  TreinoSubjectTopicRoute: TreinoSubjectTopicRoute,
+}
+
+const TreinoRouteWithChildren =
+  TreinoRoute._addFileChildren(TreinoRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -156,16 +273,11 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   RankingRoute: RankingRoute,
   ResultadoRoute: ResultadoRoute,
+  TreinoRoute: TreinoRouteWithChildren,
+  SimuladoExamIdRoute: SimuladoExamIdRoute,
+  SimuladoIndexRoute: SimuladoIndexRoute,
+  SimuladoResultadoAttemptIdRoute: SimuladoResultadoAttemptIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

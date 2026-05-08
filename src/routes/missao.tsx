@@ -94,7 +94,7 @@ function MissionPage() {
       // 2. Todas as questões em paralelo
       const { data: allQs } = await supabase
         .from("questions")
-        .select("id, subject_id, statement, options, correct_index, explanation, difficulty, bloom_level");
+        .select("id, subject_id, statement, options, correct_index, explanation, difficulty, bloom_level, topic");
       const allQuestions = (allQs ?? []) as Question[];
 
       // 2b. Nível Bloom desbloqueado pelo aluno

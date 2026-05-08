@@ -100,7 +100,7 @@ function MissionPage() {
       // 2b. Nível Bloom desbloqueado pelo aluno
       const { data: statsRow } = await supabase
         .from("user_stats")
-        .select("unlocked_bloom_level")
+        .select("unlocked_bloom_level, weak_topics")
         .eq("user_id", user.id)
         .maybeSingle();
       const unlocked = (statsRow?.unlocked_bloom_level ?? 2) as number;

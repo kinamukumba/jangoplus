@@ -122,14 +122,31 @@ function MissionPage() {
         .eq("mission_id", m.id);
       const askedToday = new Set((todayAttempts ?? []).map((r) => r.question_id as string));
 
+      // 4b. Tópicos fracos do último simulado — prioriza no pool fresh
+      const weakTopicsBySubject: Record<string, Set<string>> = {};
+      const weakRaw = (statsRow as { weak_topics?: Array<{ subject_code: string; topic: string }> } | null)?.weak_topics ?? [];
+      for (const w of weakRaw) {
+        (weakTopicsBySubject[w.subject_code] ??= new Set()).add(w.topic);
+      }
+
       const built: Record<SubjectCode, SubjectPool> = {} as Record<SubjectCode, SubjectPool>;
       for (const s of subjects) {
         // Só usa questões cujo nível Bloom está desbloqueado
         const qs = allQuestions.filter(
           (q) => q.subject_id === s.id && (q.bloom_level ?? 1) <= unlocked,
         );
-        // Ordena fácil → difícil dentro de cada bucket (fresh / stale)
-        const fresh = sortByBloomAsc(
+        const weakSet = weakTopicsBySubject[s.code];
+        const sortWithWeak = (arr: Question[]) => {
+          if (!weakSet || weakSet.size === 0) return sortByBloomAsc(arr);
+          // Tópicos fracos primeiro, depois ordenação Bloom asc
+          return arr.slice().sort((a, b) => {
+            const aw = weakSet.has(((a as Question & { topic?: string | null }).topic ?? "")) ? 0 : 1;
+            const bw = weakSet.has(((b as Question & { topic?: string | null }).topic ?? "")) ? 0 : 1;
+            if (aw !== bw) return aw - bw;
+            return (a.bloom_level ?? 1) - (b.bloom_level ?? 1);
+          });
+        };
+        const fresh = sortWithWeak(
           shuffle(qs.filter((q) => !recentIds.has(q.id) && !askedToday.has(q.id))),
         );
         const stale = sortByBloomAsc(

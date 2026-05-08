@@ -80,6 +80,160 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_attempt_answers: {
+        Row: {
+          answered_at: string
+          attempt_id: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          selected_index: number | null
+          subject_code: string
+          topic: string | null
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string
+          attempt_id: string
+          id?: string
+          is_correct?: boolean
+          question_id: string
+          selected_index?: number | null
+          subject_code: string
+          topic?: string | null
+          user_id: string
+        }
+        Update: {
+          answered_at?: string
+          attempt_id?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          selected_index?: number | null
+          subject_code?: string
+          topic?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_attempt_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "exam_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_attempts: {
+        Row: {
+          correct_count: number
+          duration_seconds: number | null
+          exam_id: string
+          finished_at: string | null
+          id: string
+          score: number
+          started_at: string
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          correct_count?: number
+          duration_seconds?: number | null
+          exam_id: string
+          finished_at?: string | null
+          id?: string
+          score?: number
+          started_at?: string
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          correct_count?: number
+          duration_seconds?: number | null
+          exam_id?: string
+          finished_at?: string | null
+          id?: string
+          score?: number
+          started_at?: string
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_attempts_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_questions: {
+        Row: {
+          exam_id: string
+          id: string
+          position: number
+          question_id: string
+        }
+        Insert: {
+          exam_id: string
+          id?: string
+          position?: number
+          question_id: string
+        }
+        Update: {
+          exam_id?: string
+          id?: string
+          position?: number
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_questions_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exams: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          id: string
+          name: string
+          subject_code: string
+          total_questions: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          name: string
+          subject_code: string
+          total_questions?: number
+          year: number
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          name?: string
+          subject_code?: string
+          total_questions?: number
+          year?: number
+        }
+        Relationships: []
+      }
       mission_attempts: {
         Row: {
           answered_at: string
@@ -167,33 +321,39 @@ export type Database = {
           correct_index: number
           created_at: string
           difficulty: string
+          exam_year: number | null
           explanation: string | null
           id: string
           options: Json
           statement: string
           subject_id: string
+          topic: string | null
         }
         Insert: {
           bloom_level?: number
           correct_index: number
           created_at?: string
           difficulty?: string
+          exam_year?: number | null
           explanation?: string | null
           id?: string
           options: Json
           statement: string
           subject_id: string
+          topic?: string | null
         }
         Update: {
           bloom_level?: number
           correct_index?: number
           created_at?: string
           difficulty?: string
+          exam_year?: number | null
           explanation?: string | null
           id?: string
           options?: Json
           statement?: string
           subject_id?: string
+          topic?: string | null
         }
         Relationships: [
           {
@@ -268,6 +428,7 @@ export type Database = {
           unlocked_bloom_level: number
           updated_at: string
           user_id: string
+          weak_topics: Json
           week_start_date: string
           weekly_missions: number
           weekly_xp: number
@@ -284,6 +445,7 @@ export type Database = {
           unlocked_bloom_level?: number
           updated_at?: string
           user_id: string
+          weak_topics?: Json
           week_start_date?: string
           weekly_missions?: number
           weekly_xp?: number
@@ -300,6 +462,7 @@ export type Database = {
           unlocked_bloom_level?: number
           updated_at?: string
           user_id?: string
+          weak_topics?: Json
           week_start_date?: string
           weekly_missions?: number
           weekly_xp?: number

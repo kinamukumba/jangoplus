@@ -172,7 +172,22 @@ function HomePage() {
   }
 
   const days = daysUntilExam();
-  const { mission, stats, counts, totalAnswered, totalTarget, state, rank, preview } = data;
+  const {
+    mission, stats, counts, totalAnswered, totalTarget, state, rank, preview,
+    neighbors, rankDelta, leagueChanged, improved, declining, approval, riskDrops,
+  } = data;
+  const sekuloLine = pickContextualMessage({
+    delayDays: stats.delay_days,
+    streak: stats.current_streak,
+    rankDelta,
+    position: rank.position,
+    inTop10: rank.position > 0 && rank.position <= 10,
+    leagueChanged,
+    improvedSubject: improved,
+    decliningSubject: declining,
+    missionCompleted: mission.completed,
+    inProgress: !mission.completed && totalAnswered > 0,
+  });
   const progressPct = Math.round((totalAnswered / totalTarget) * 100);
 
   const startMission = async () => {

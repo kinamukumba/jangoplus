@@ -61,6 +61,13 @@ interface MissionState {
   state: HomeState;
   rank: RankInfo;
   preview: RankPreview;
+  neighbors: NeighborRow[];
+  rankDelta: number;
+  leagueChanged: "up" | "down" | null;
+  improved: SubjectCode | null;
+  declining: SubjectCode | null;
+  approval: ApprovalResult | null;
+  riskDrops: number;
 }
 
 function HomePage() {

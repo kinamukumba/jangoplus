@@ -124,8 +124,38 @@ function HomePage() {
       const rank = await fetchRankInfo(user.id);
       const preview = await previewMissionImpact(user.id, estimateMissionXp());
 
+      // Vizinhos no ranking
+      const neighbors = await fetchNeighbors(user.id, 2);
+
+      // Variação de posição vs último snapshot semanal
+      const snap = await fetchLastSnapshot(user.id);
+      const rankDelta = snap && rank.position > 0 ? snap.rank_position - rank.position : 0;
+      const snapLeague = snap && isLeague(snap.league) ? snap.league : null;
+      let leagueChanged: "up" | "down" | null = null;
+      if (snapLeague && snapLeague !== rank.league) {
+        const order = ["bronze", "prata", "ouro", "elite"];
+        leagueChanged =
+          order.indexOf(rank.league) > order.indexOf(snapLeague) ? "up" : "down";
+      }
+
+      // Evolução por disciplina
+      const evo = await fetchEvolution(user.id);
+      const improved = pickImprovement(evo)?.code ?? null;
+      const declining = pickDecline(evo)?.code ?? null;
+
+      // Probabilidade de aprovação
+      const approval = await approvalProbability(user.id);
+
+      // Risco de cair se falhar hoje
+      const riskDrops = mission.completed
+        ? 0
+        : await estimateRiskIfMissed(user.id, rank.weeklyXp);
+
       if (active) {
-        setData({ mission, stats, counts, totalAnswered, totalTarget, state, rank, preview });
+        setData({
+          mission, stats, counts, totalAnswered, totalTarget, state, rank, preview,
+          neighbors, rankDelta, leagueChanged, improved, declining, approval, riskDrops,
+        });
       }
     })();
     return () => {

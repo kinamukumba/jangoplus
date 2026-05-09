@@ -47,6 +47,12 @@ export const Route = createRootRoute({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Jango+ — Sekulo" },
+      { name: "description", content: "Jango+ is an academic training app that uses a demanding mentor, Sekulo, to guide and evaluate students daily." },
+      { property: "og:description", content: "Jango+ is an academic training app that uses a demanding mentor, Sekulo, to guide and evaluate students daily." },
+      { name: "twitter:description", content: "Jango+ is an academic training app that uses a demanding mentor, Sekulo, to guide and evaluate students daily." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/894eb60e-92d2-48ef-873d-56c091e3752f/id-preview-797daa84--a6e749d7-c2c8-44ec-977f-9a0ceca8f145.lovable.app-1778349437263.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/894eb60e-92d2-48ef-873d-56c091e3752f/id-preview-797daa84--a6e749d7-c2c8-44ec-977f-9a0ceca8f145.lovable.app-1778349437263.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

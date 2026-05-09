@@ -96,6 +96,40 @@ export async function previewMissionImpact(
   return { current, projected, total, delta };
 }
 
+export interface NeighborRow {
+  user_id: string;
+  display_name: string;
+  weekly_xp: number;
+  rank_position: number;
+  relation: "above" | "self" | "below";
+}
+
+export async function fetchNeighbors(userId: string, radius = 2): Promise<NeighborRow[]> {
+  const { data } = await supabase.rpc("get_rank_neighbors", {
+    _user_id: userId,
+    _radius: radius,
+  });
+  return (data ?? []) as NeighborRow[];
+}
+
+// Estima quantas posições o aluno cai se NÃO jogar hoje, assumindo
+// que o vizinho de baixo ganha XP típico (estimateMissionXp).
+export async function estimateRiskIfMissed(userId: string, weeklyXp: number): Promise<number> {
+  const { data } = await supabase.rpc("get_rank_neighbors", {
+    _user_id: userId,
+    _radius: 4,
+  });
+  const rows = (data ?? []) as NeighborRow[];
+  const below = rows.filter((r) => r.relation === "below");
+  if (below.length === 0) return 0;
+  const projection = estimateMissionXp() * 0.6; // assume vizinho faz ~60% do que tu farias
+  let drops = 0;
+  for (const b of below) {
+    if (b.weekly_xp + projection > weeklyXp) drops++;
+  }
+  return drops;
+}
+
 // Lê o último snapshot do utilizador para calcular variação de posição.
 export async function fetchLastSnapshot(userId: string) {
   const { data } = await supabase

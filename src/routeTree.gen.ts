@@ -14,6 +14,7 @@ import { Route as ResultadoRouteImport } from './routes/resultado'
 import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MissaoRouteImport } from './routes/missao'
+import { Route as EvolucaoRouteImport } from './routes/evolucao'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SimuladoIndexRouteImport } from './routes/simulado.index'
@@ -44,6 +45,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const MissaoRoute = MissaoRouteImport.update({
   id: '/missao',
   path: '/missao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EvolucaoRoute = EvolucaoRouteImport.update({
+  id: '/evolucao',
+  path: '/evolucao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -81,6 +87,7 @@ const SimuladoResultadoAttemptIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/evolucao': typeof EvolucaoRoute
   '/missao': typeof MissaoRoute
   '/onboarding': typeof OnboardingRoute
   '/ranking': typeof RankingRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/evolucao': typeof EvolucaoRoute
   '/missao': typeof MissaoRoute
   '/onboarding': typeof OnboardingRoute
   '/ranking': typeof RankingRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/evolucao': typeof EvolucaoRoute
   '/missao': typeof MissaoRoute
   '/onboarding': typeof OnboardingRoute
   '/ranking': typeof RankingRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/evolucao'
     | '/missao'
     | '/onboarding'
     | '/ranking'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/evolucao'
     | '/missao'
     | '/onboarding'
     | '/ranking'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/evolucao'
     | '/missao'
     | '/onboarding'
     | '/ranking'
@@ -163,6 +175,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  EvolucaoRoute: typeof EvolucaoRoute
   MissaoRoute: typeof MissaoRoute
   OnboardingRoute: typeof OnboardingRoute
   RankingRoute: typeof RankingRoute
@@ -208,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/missao'
       fullPath: '/missao'
       preLoaderRoute: typeof MissaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evolucao': {
+      id: '/evolucao'
+      path: '/evolucao'
+      fullPath: '/evolucao'
+      preLoaderRoute: typeof EvolucaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -269,6 +289,7 @@ const TreinoRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  EvolucaoRoute: EvolucaoRoute,
   MissaoRoute: MissaoRoute,
   OnboardingRoute: OnboardingRoute,
   RankingRoute: RankingRoute,

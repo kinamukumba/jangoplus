@@ -514,6 +514,16 @@ export type Database = {
       }
     }
     Functions: {
+      get_rank_neighbors: {
+        Args: { _radius?: number; _user_id: string }
+        Returns: {
+          display_name: string
+          rank_position: number
+          relation: string
+          user_id: string
+          weekly_xp: number
+        }[]
+      }
       get_user_rank: {
         Args: { _user_id: string }
         Returns: {

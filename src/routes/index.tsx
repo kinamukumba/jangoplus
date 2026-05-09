@@ -8,7 +8,6 @@ import {
   type SubjectCode,
 } from "@/lib/sekulo-config";
 import {
-  homeMessage,
   statusLine,
   preMissionMessage,
   type HomeState,
@@ -26,16 +25,27 @@ import {
   previewMissionImpact,
   estimateMissionXp,
   rolloverWeekIfNeeded,
+  fetchNeighbors,
+  fetchLastSnapshot,
+  estimateRiskIfMissed,
   type RankInfo,
   type RankPreview,
+  type NeighborRow,
 } from "@/lib/ranking";
 import { Button } from "@/components/ui/button";
 import { SekuloMessage } from "@/components/sekulo/SekuloMessage";
 import { Stat } from "@/components/sekulo/Stat";
 import { XPBar } from "@/components/sekulo/XPBar";
 import { LeagueBadge } from "@/components/sekulo/LeagueBadge";
+import { NeighborStrip } from "@/components/sekulo/NeighborStrip";
+import { UrgencyBanner } from "@/components/sekulo/UrgencyBanner";
+import { ApprovalGauge } from "@/components/sekulo/ApprovalGauge";
 import { Progress } from "@/components/ui/progress";
 import { levelProgress } from "@/lib/progression";
+import { pickContextualMessage } from "@/lib/sekulo-brain";
+import { fetchEvolution, pickImprovement, pickDecline } from "@/lib/evolution";
+import { approvalProbability, type ApprovalResult } from "@/lib/approval";
+import { isLeague } from "@/lib/leagues";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -50,6 +60,13 @@ interface MissionState {
   state: HomeState;
   rank: RankInfo;
   preview: RankPreview;
+  neighbors: NeighborRow[];
+  rankDelta: number;
+  leagueChanged: "up" | "down" | null;
+  improved: SubjectCode | null;
+  declining: SubjectCode | null;
+  approval: ApprovalResult | null;
+  riskDrops: number;
 }
 
 function HomePage() {
@@ -106,8 +123,38 @@ function HomePage() {
       const rank = await fetchRankInfo(user.id);
       const preview = await previewMissionImpact(user.id, estimateMissionXp());
 
+      // Vizinhos no ranking
+      const neighbors = await fetchNeighbors(user.id, 2);
+
+      // Variação de posição vs último snapshot semanal
+      const snap = await fetchLastSnapshot(user.id);
+      const rankDelta = snap && rank.position > 0 ? snap.rank_position - rank.position : 0;
+      const snapLeague = snap && isLeague(snap.league) ? snap.league : null;
+      let leagueChanged: "up" | "down" | null = null;
+      if (snapLeague && snapLeague !== rank.league) {
+        const order = ["bronze", "prata", "ouro", "elite"];
+        leagueChanged =
+          order.indexOf(rank.league) > order.indexOf(snapLeague) ? "up" : "down";
+      }
+
+      // Evolução por disciplina
+      const evo = await fetchEvolution(user.id);
+      const improved = pickImprovement(evo)?.code ?? null;
+      const declining = pickDecline(evo)?.code ?? null;
+
+      // Probabilidade de aprovação
+      const approval = await approvalProbability(user.id);
+
+      // Risco de cair se falhar hoje
+      const riskDrops = mission.completed
+        ? 0
+        : await estimateRiskIfMissed(user.id, rank.weeklyXp);
+
       if (active) {
-        setData({ mission, stats, counts, totalAnswered, totalTarget, state, rank, preview });
+        setData({
+          mission, stats, counts, totalAnswered, totalTarget, state, rank, preview,
+          neighbors, rankDelta, leagueChanged, improved, declining, approval, riskDrops,
+        });
       }
     })();
     return () => {
@@ -124,7 +171,22 @@ function HomePage() {
   }
 
   const days = daysUntilExam();
-  const { mission, stats, counts, totalAnswered, totalTarget, state, rank, preview } = data;
+  const {
+    mission, stats, counts, totalAnswered, totalTarget, state, rank, preview,
+    neighbors, rankDelta, leagueChanged, improved, declining, approval, riskDrops,
+  } = data;
+  const sekuloLine = pickContextualMessage({
+    delayDays: stats.delay_days,
+    streak: stats.current_streak,
+    rankDelta,
+    position: rank.position,
+    inTop10: rank.position > 0 && rank.position <= 10,
+    leagueChanged,
+    improvedSubject: improved,
+    decliningSubject: declining,
+    missionCompleted: mission.completed,
+    inProgress: !mission.completed && totalAnswered > 0,
+  });
   const progressPct = Math.round((totalAnswered / totalTarget) * 100);
 
   const startMission = async () => {
@@ -167,20 +229,21 @@ function HomePage() {
           </div>
         </section>
 
-        {/* Mensagem do Sekulo */}
+        {/* Banner de urgência */}
+        {!mission.completed && riskDrops >= 1 && (
+          <UrgencyBanner
+            level={riskDrops >= 2 ? "critical" : "warn"}
+            message={`Se falhares hoje, cais ${riskDrops} posiç${riskDrops === 1 ? "ão" : "ões"}.`}
+          />
+        )}
+
+        {/* Mensagem do Sekulo (contextual) */}
         <section className="bg-card border border-border rounded-lg p-5">
-          <SekuloMessage
-            tone={
-              state === "failed_yesterday"
-                ? "alert"
-                : state === "completed_today"
-                  ? "success"
-                  : "neutral"
-            }
-          >
-            {homeMessage(state)}
-          </SekuloMessage>
+          <SekuloMessage tone={sekuloLine.tone}>{sekuloLine.text}</SekuloMessage>
         </section>
+
+        {/* Probabilidade de aprovação */}
+        <ApprovalGauge result={approval} />
 
         {/* XP & Nível */}
         <section className="bg-card border border-border rounded-lg p-5">
@@ -196,6 +259,9 @@ function HomePage() {
             tone={stats.delay_days > 0 ? "alert" : "neutral"}
           />
         </section>
+
+        {/* Vizinhança no ranking */}
+        {neighbors.length > 1 && <NeighborStrip neighbors={neighbors} myXp={rank.weeklyXp} /> }
 
         {/* Card de ranking destacado: posição, liga, quanto falta */}
         <Link
@@ -295,21 +361,28 @@ function HomePage() {
           </ul>
         </section>
 
-        {/* Acessos: treino por tópico + simulado de exame passado */}
-        <section className="grid grid-cols-2 gap-2">
+        {/* Acessos */}
+        <section className="grid grid-cols-3 gap-2">
           <Link
             to="/treino"
-            className="bg-card border border-border rounded-lg p-4 hover:bg-accent transition-colors"
+            className="bg-card border border-border rounded-lg p-3 hover:bg-accent transition-colors"
           >
             <div className="uppercase-tight text-[10px] text-muted-foreground">Treino</div>
-            <div className="font-display text-sm font-bold mt-1">Por tópico</div>
+            <div className="font-display text-xs font-bold mt-1">Tópicos</div>
           </Link>
           <Link
             to="/simulado"
-            className="bg-card border border-border rounded-lg p-4 hover:bg-accent transition-colors"
+            className="bg-card border border-border rounded-lg p-3 hover:bg-accent transition-colors"
           >
             <div className="uppercase-tight text-[10px] text-muted-foreground">Simulado</div>
-            <div className="font-display text-sm font-bold mt-1">Exame passado</div>
+            <div className="font-display text-xs font-bold mt-1">Exame</div>
+          </Link>
+          <Link
+            to="/evolucao"
+            className="bg-card border border-border rounded-lg p-3 hover:bg-accent transition-colors"
+          >
+            <div className="uppercase-tight text-[10px] text-muted-foreground">Evolução</div>
+            <div className="font-display text-xs font-bold mt-1">7 dias</div>
           </Link>
         </section>
 

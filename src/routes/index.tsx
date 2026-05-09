@@ -230,20 +230,21 @@ function HomePage() {
           </div>
         </section>
 
-        {/* Mensagem do Sekulo */}
+        {/* Banner de urgência */}
+        {!mission.completed && riskDrops >= 1 && (
+          <UrgencyBanner
+            level={riskDrops >= 2 ? "critical" : "warn"}
+            message={`Se falhares hoje, cais ${riskDrops} posiç${riskDrops === 1 ? "ão" : "ões"}.`}
+          />
+        )}
+
+        {/* Mensagem do Sekulo (contextual) */}
         <section className="bg-card border border-border rounded-lg p-5">
-          <SekuloMessage
-            tone={
-              state === "failed_yesterday"
-                ? "alert"
-                : state === "completed_today"
-                  ? "success"
-                  : "neutral"
-            }
-          >
-            {homeMessage(state)}
-          </SekuloMessage>
+          <SekuloMessage tone={sekuloLine.tone}>{sekuloLine.text}</SekuloMessage>
         </section>
+
+        {/* Probabilidade de aprovação */}
+        <ApprovalGauge result={approval} />
 
         {/* XP & Nível */}
         <section className="bg-card border border-border rounded-lg p-5">
@@ -259,6 +260,9 @@ function HomePage() {
             tone={stats.delay_days > 0 ? "alert" : "neutral"}
           />
         </section>
+
+        {/* Vizinhança no ranking */}
+        {neighbors.length > 1 && <NeighborStrip neighbors={neighbors} myXp={rank.weeklyXp} /> }
 
         {/* Card de ranking destacado: posição, liga, quanto falta */}
         <Link

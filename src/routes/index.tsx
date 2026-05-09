@@ -8,7 +8,6 @@ import {
   type SubjectCode,
 } from "@/lib/sekulo-config";
 import {
-  homeMessage,
   statusLine,
   preMissionMessage,
   type HomeState,
@@ -362,21 +361,28 @@ function HomePage() {
           </ul>
         </section>
 
-        {/* Acessos: treino por tópico + simulado de exame passado */}
-        <section className="grid grid-cols-2 gap-2">
+        {/* Acessos */}
+        <section className="grid grid-cols-3 gap-2">
           <Link
             to="/treino"
-            className="bg-card border border-border rounded-lg p-4 hover:bg-accent transition-colors"
+            className="bg-card border border-border rounded-lg p-3 hover:bg-accent transition-colors"
           >
             <div className="uppercase-tight text-[10px] text-muted-foreground">Treino</div>
-            <div className="font-display text-sm font-bold mt-1">Por tópico</div>
+            <div className="font-display text-xs font-bold mt-1">Tópicos</div>
           </Link>
           <Link
             to="/simulado"
-            className="bg-card border border-border rounded-lg p-4 hover:bg-accent transition-colors"
+            className="bg-card border border-border rounded-lg p-3 hover:bg-accent transition-colors"
           >
             <div className="uppercase-tight text-[10px] text-muted-foreground">Simulado</div>
-            <div className="font-display text-sm font-bold mt-1">Exame passado</div>
+            <div className="font-display text-xs font-bold mt-1">Exame</div>
+          </Link>
+          <Link
+            to="/evolucao"
+            className="bg-card border border-border rounded-lg p-3 hover:bg-accent transition-colors"
+          >
+            <div className="uppercase-tight text-[10px] text-muted-foreground">Evolução</div>
+            <div className="font-display text-xs font-bold mt-1">7 dias</div>
           </Link>
         </section>
 

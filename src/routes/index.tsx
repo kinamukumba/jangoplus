@@ -26,16 +26,27 @@ import {
   previewMissionImpact,
   estimateMissionXp,
   rolloverWeekIfNeeded,
+  fetchNeighbors,
+  fetchLastSnapshot,
+  estimateRiskIfMissed,
   type RankInfo,
   type RankPreview,
+  type NeighborRow,
 } from "@/lib/ranking";
 import { Button } from "@/components/ui/button";
 import { SekuloMessage } from "@/components/sekulo/SekuloMessage";
 import { Stat } from "@/components/sekulo/Stat";
 import { XPBar } from "@/components/sekulo/XPBar";
 import { LeagueBadge } from "@/components/sekulo/LeagueBadge";
+import { NeighborStrip } from "@/components/sekulo/NeighborStrip";
+import { UrgencyBanner } from "@/components/sekulo/UrgencyBanner";
+import { ApprovalGauge } from "@/components/sekulo/ApprovalGauge";
 import { Progress } from "@/components/ui/progress";
 import { levelProgress } from "@/lib/progression";
+import { pickContextualMessage } from "@/lib/sekulo-brain";
+import { fetchEvolution, pickImprovement, pickDecline } from "@/lib/evolution";
+import { approvalProbability, type ApprovalResult } from "@/lib/approval";
+import { isLeague } from "@/lib/leagues";
 
 export const Route = createFileRoute("/")({
   component: HomePage,

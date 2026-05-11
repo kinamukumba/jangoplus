@@ -7,8 +7,8 @@
   },
   "functions": {
     "api/handler.ts": {
-      "memory": 3008,
-      "maxDuration": 60,
+      "memory": 1024,
+      "maxDuration": 30,
       "runtime": "nodejs20.x"
     }
   },

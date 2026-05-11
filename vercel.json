@@ -1,21 +1,4 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/client",
-  "env": {
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key"
-  },
-  "functions": {
-    "api/handler.ts": {
-      "memory": 1024,
-      "maxDuration": 30,
-      "runtime": "nodejs20.x"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api/handler.ts"
-    }
-  ]
+  "outputDirectory": "dist/client"
 }

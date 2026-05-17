@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const data = await response.json();
-        
+
         if (data.success) {
             // REDIRECIONAR SE NÃO TIVER CONCLUÍDO O ONBOARDING
             const onOnboardingPage = window.location.pathname.includes('onboarding.html');
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Populate dashboard if the elements exist
             populateDashboard(data.user);
             populateProfile(data.user);
-            
+
             // Carregar o roadmap do banco de dados
             loadRoadmap();
 
@@ -47,6 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Configurar e carregar formulários de configurações
             populateSettingsForm();
             setupSettingsForms();
+
+            // Carregar simulado se estiver na página de simulado
+            loadSimulado();
         } else {
             console.error('Falha ao carregar dados:', data.error);
         }
@@ -72,9 +75,9 @@ function populateDashboard(user) {
     if (!document.getElementById('stat-streak')) return; // Apenas no dashboard
 
     document.getElementById('stat-streak').textContent = `${user.current_streak} dias`;
-    
+
     const delayEl = document.getElementById('stat-delay');
-    if(delayEl) {
+    if (delayEl) {
         delayEl.textContent = `${user.delay_days} dias`;
         if (user.delay_days > 0) {
             delayEl.classList.remove('text-muted-foreground');
@@ -83,10 +86,10 @@ function populateDashboard(user) {
     }
 
     const leagueBadge = document.getElementById('league-badge');
-    if(leagueBadge) leagueBadge.textContent = user.league;
-    
+    if (leagueBadge) leagueBadge.textContent = user.league;
+
     const rankWeekly = document.getElementById('rank-weekly');
-    if(rankWeekly) rankWeekly.textContent = `${user.weekly_xp} XP esta semana`;
+    if (rankWeekly) rankWeekly.textContent = `${user.weekly_xp} XP esta semana`;
 
     const sekuloMsg = document.getElementById('sekulo-message');
     if (sekuloMsg) {
@@ -99,10 +102,10 @@ function populateDashboard(user) {
 
     const level = Math.floor((user.xp_total || 0) / 1000) + 1;
     const currentLevelXp = (user.xp_total || 0) % 1000;
-    
-    if(document.getElementById('user-level')) document.getElementById('user-level').textContent = `Lvl ${level}`;
-    if(document.getElementById('xp-progress-text')) document.getElementById('xp-progress-text').textContent = `${currentLevelXp} / 1000 XP`;
-    if(document.getElementById('xp-progress-bar')) document.getElementById('xp-progress-bar').style.width = `${(currentLevelXp / 1000) * 100}%`;
+
+    if (document.getElementById('user-level')) document.getElementById('user-level').textContent = `Lvl ${level}`;
+    if (document.getElementById('xp-progress-text')) document.getElementById('xp-progress-text').textContent = `${currentLevelXp} / 1000 XP`;
+    if (document.getElementById('xp-progress-bar')) document.getElementById('xp-progress-bar').style.width = `${(currentLevelXp / 1000) * 100}%`;
 
     // Preencher dias restantes até o exame dinamicamente na home
     const daysLeftEl = document.getElementById('days-left');
@@ -126,7 +129,7 @@ function populateDashboard(user) {
     const missionList = document.getElementById('mission-list');
     const missionProgText = document.getElementById('mission-progress-text');
     const missionProgressBar = document.getElementById('mission-progress-bar');
-    
+
     if (missionList) {
         fetch('../backend/api/users/mission.php')
             .then(res => res.json())
@@ -340,14 +343,14 @@ async function loadMissionQuiz() {
                         </div>
                         <div class="grid grid-cols-1 gap-2 pt-2">
                             ${q.options.map((opt) => {
-                                const optLetter = opt.trim().charAt(0); // A, B, C, D
-                                return `
+                    const optLetter = opt.trim().charAt(0); // A, B, C, D
+                    return `
                                     <button type="button" data-option="${optLetter}" class="option-btn w-full p-3 rounded-lg border border-border bg-muted/10 text-left text-xs font-medium hover:border-primary transition-all select-none flex items-center gap-3">
                                         <span class="option-indicator h-4 w-4 rounded-full border border-muted-foreground/50 flex items-center justify-center font-mono text-[9px]"></span>
                                         <span>${opt}</span>
                                     </button>
                                 `;
-                            }).join('')}
+                }).join('')}
                         </div>
                     </div>
                 `;
@@ -423,7 +426,7 @@ async function submitQuizAnswers() {
 
         if (data.success) {
             const missionContainer = document.getElementById('mission-container');
-            
+
             let resultStatusColor = 'text-destructive';
             let bgStatusColor = 'bg-destructive/10 border-destructive/20';
             let resultTitle = 'Reprovado pelo Sekulo!';
@@ -605,4 +608,310 @@ function setupSettingsForms() {
         });
     }
 }
+
+
+let simuladoTimerInterval = null;
+let simuladoSecondsLeft = 1200; // 20 minutos por padrão
+
+async function loadSimulado() {
+    const container = document.getElementById('simulado-container');
+    if (!container) return; // Apenas na simulado.html
+
+    try {
+        const response = await fetch('../backend/api/users/simulado.php');
+        const data = await response.json();
+
+        if (data.success) {
+            // Renderizar cabeçalho da universidade/curso e as 10 perguntas
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <div class="border border-primary/20 bg-primary/5 rounded-xl p-4 flex items-center justify-between">
+                        <div>
+                            <span class="uppercase-tight text-[9px] text-primary tracking-widest">${data.course_category}</span>
+                            <h2 class="font-display text-lg font-bold">Simulado de Admissão - ${data.university}</h2>
+                            <p class="text-[10px] text-muted-foreground">Curso Alvo: <strong>${data.specific_course}</strong> • 10 Perguntas Complexas</p>
+                        </div>
+                        <span class="text-3xl">🎓</span>
+                    </div>
+
+                    <div class="space-y-8" id="simulado-questions-list">
+                        <!-- Perguntas injetadas aqui -->
+                    </div>
+
+                    <div id="simulado-error" class="hidden text-xs text-destructive font-medium text-center bg-destructive/10 border border-destructive/20 rounded-lg p-3"></div>
+
+                    <button id="btn-submit-simulado" class="btn-primary w-full h-12 uppercase-tight text-xs font-bold mt-4 shadow-lg shadow-primary/10">
+                        Submeter Exame para o Sekulo
+                    </button>
+                </div>
+            `;
+
+            const listContainer = document.getElementById('simulado-questions-list');
+            data.questions.forEach((q) => {
+                const qHtml = `
+                    <div class="space-y-3 bg-card border border-border rounded-xl p-5 relative overflow-hidden" data-sqid="${q.id}">
+                        <div class="flex items-start gap-3">
+                            <span class="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-mono font-bold text-muted-foreground mt-0.5">${q.id}</span>
+                            <div>
+                                <span class="uppercase-tight text-[9px] text-primary font-mono">${q.subject}</span>
+                                <p class="text-sm font-semibold mt-1">${q.text}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2 pt-2">
+                            ${q.options.map((opt) => {
+                    const optLetter = opt.trim().charAt(0); // A, B, C, D
+                    return `
+                                    <button type="button" data-option="${optLetter}" class="simulado-option-btn w-full p-3 rounded-lg border border-border bg-muted/10 text-left text-xs font-medium hover:border-primary transition-all select-none flex items-center gap-3">
+                                        <span class="option-indicator h-4 w-4 rounded-full border border-muted-foreground/50 flex items-center justify-center font-mono text-[9px]"></span>
+                                        <span>${opt}</span>
+                                    </button>
+                                `;
+                }).join('')}
+                        </div>
+                    </div>
+                `;
+                listContainer.innerHTML += qHtml;
+            });
+
+            // Configurar comportamento de clique nas opções do simulado
+            const questionBlocks = document.querySelectorAll('[data-sqid]');
+            questionBlocks.forEach(block => {
+                const btns = block.querySelectorAll('.simulado-option-btn');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        btns.forEach(b => {
+                            b.classList.remove('border-primary', 'bg-primary/5');
+                            b.classList.add('border-border', 'bg-muted/10');
+                            b.querySelector('.option-indicator').classList.remove('bg-primary', 'border-primary');
+                            b.querySelector('.option-indicator').classList.add('border-muted-foreground/50');
+                        });
+                        btn.classList.remove('border-border', 'bg-muted/10');
+                        btn.classList.add('border-primary', 'bg-primary/5');
+                        btn.querySelector('.option-indicator').classList.remove('border-muted-foreground/50');
+                        btn.querySelector('.option-indicator').classList.add('bg-primary', 'border-primary');
+                    });
+                });
+            });
+
+            // Configurar Timer regressivo de 20 minutos
+            startSimuladoCountdown();
+
+            // Configurar botões de submissão e modal
+            const submitBtn = document.getElementById('btn-submit-simulado');
+            const confirmModal = document.getElementById('confirm-modal');
+            const modalCancel = document.getElementById('modal-cancel-btn');
+            const modalConfirm = document.getElementById('modal-confirm-btn');
+
+            submitBtn.addEventListener('click', () => {
+                // Verificar se todas as questões estão marcadas
+                const unanswered = checkUnansweredQuestions();
+                const errEl = document.getElementById('simulado-error');
+
+                if (unanswered > 0) {
+                    errEl.textContent = `Ainda te faltam responder a ${unanswered} questões. Responde a todas as perguntas antes de submeter ao Sekulo.`;
+                    errEl.classList.remove('hidden');
+                    errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+
+                errEl.classList.add('hidden');
+                confirmModal.classList.remove('hidden');
+            });
+
+            modalCancel.addEventListener('click', () => {
+                confirmModal.classList.add('hidden');
+            });
+
+            modalConfirm.addEventListener('click', () => {
+                confirmModal.classList.add('hidden');
+                submitSimuladoAnswers();
+            });
+
+        } else {
+            container.innerHTML = `<p class="text-xs text-destructive text-center">${data.error || 'Erro ao gerar simulado.'}</p>`;
+        }
+    } catch (err) {
+        console.error('Erro ao carregar o simulado:', err);
+        container.innerHTML = '<p class="text-xs text-destructive text-center">Erro ao ligar ao servidor local do Jango.</p>';
+    }
+}
+
+function checkUnansweredQuestions() {
+    const questionBlocks = document.querySelectorAll('[data-sqid]');
+    let unansweredCount = 0;
+    questionBlocks.forEach(block => {
+        const selected = block.querySelector('.simulado-option-btn.border-primary');
+        if (!selected) unansweredCount++;
+    });
+    return unansweredCount;
+}
+
+function startSimuladoCountdown() {
+    if (simuladoTimerInterval) clearInterval(simuladoTimerInterval);
+
+    simuladoSecondsLeft = 1200; // 20 minutos
+    const timerText = document.getElementById('simulado-timer');
+    const timerDot = document.getElementById('timer-dot');
+
+    simuladoTimerInterval = setInterval(() => {
+        simuladoSecondsLeft--;
+
+        if (simuladoSecondsLeft <= 0) {
+            clearInterval(simuladoTimerInterval);
+            timerText.textContent = "00:00";
+            alert("O tempo esgotou! O Sekulo recolheu a tua prova automaticamente para avaliação.");
+            submitSimuladoAnswers(true); // Forçar submissão automática por tempo esgotado
+            return;
+        }
+
+        const mins = Math.floor(simuladoSecondsLeft / 60);
+        const secs = simuladoSecondsLeft % 60;
+        const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        timerText.textContent = formatted;
+
+        // Efeito de perigo nos últimos 2 minutos (120 segundos)
+        if (simuladoSecondsLeft <= 120) {
+            timerText.classList.remove('text-primary');
+            timerText.classList.add('text-destructive', 'animate-pulse');
+            timerDot.classList.remove('bg-primary');
+            timerDot.classList.add('bg-destructive');
+        }
+    }, 1000);
+}
+
+async function submitSimuladoAnswers(isTimeout = false) {
+    if (simuladoTimerInterval) clearInterval(simuladoTimerInterval);
+
+    const questionBlocks = document.querySelectorAll('[data-sqid]');
+    const answers = {};
+
+    questionBlocks.forEach(block => {
+        const qid = block.getAttribute('data-sqid');
+        const selected = block.querySelector('.simulado-option-btn.border-primary');
+        if (selected) {
+            answers[qid] = selected.getAttribute('data-option');
+        } else {
+            answers[qid] = ''; // Vazio em caso de timeout ou incompleto
+        }
+    });
+
+    const submitBtn = document.getElementById('btn-submit-simulado');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'O Sekulo está a corrigir o teu exame...';
+    }
+
+    try {
+        const response = await fetch('../backend/api/users/submit_simulado.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            const container = document.getElementById('simulado-container');
+            const timerContainer = document.getElementById('simulado-timer-container');
+            if (timerContainer) timerContainer.classList.add('hidden');
+
+            let statusColor = 'text-destructive';
+            let bgStatusColor = 'bg-destructive/10 border-destructive/20';
+            let verdictTitle = 'REPROVADO PELO SEKULO';
+            let emojiAvatar = '💀';
+
+            if (data.passed) {
+                statusColor = 'text-success';
+                bgStatusColor = 'bg-success/10 border-success/20';
+                verdictTitle = 'APROVADO PELO SEKULO!';
+                emojiAvatar = '⚡';
+            }
+
+            container.innerHTML = `
+                <div class="space-y-8 py-4">
+                    <!-- Radial Score & Title -->
+                    <div class="text-center space-y-3">
+                        <div class="h-28 w-28 rounded-full ${data.passed ? 'bg-success/20 text-success border border-success/30' : 'bg-destructive/20 text-destructive border border-destructive/30'} flex flex-col items-center justify-center mx-auto shadow-xl">
+                            <span class="text-3xl font-display font-bold">${data.correct_count}</span>
+                            <span class="text-[10px] uppercase-tight text-muted-foreground font-mono">de 10 acertos</span>
+                        </div>
+                        <div class="space-y-1">
+                            <h2 class="font-display text-2xl font-black tracking-wide ${statusColor} mt-2">${verdictTitle}</h2>
+                            <p class="text-xs text-muted-foreground">Exame de admissão preparatório: <strong>${data.specific_course}</strong> na <strong>${data.university}</strong>.</p>
+                        </div>
+                    </div>
+
+                    <!-- Sekulo Direct Verdict Quote -->
+                    <div class="border ${bgStatusColor} rounded-xl p-5 max-w-xl mx-auto space-y-3 shadow-lg relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 text-7xl opacity-5 select-none">${emojiAvatar}</div>
+                        <div class="flex gap-4">
+                            <span class="text-3xl">👴</span>
+                            <div>
+                                <span class="uppercase-tight text-[9px] text-muted-foreground tracking-wider font-bold">O VEREDICTO DO SEKULO:</span>
+                                <p class="text-sm font-semibold italic mt-1 leading-relaxed text-foreground">${data.sekulo_message}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- XP Reward Block if passed -->
+                    ${data.passed ? `
+                        <div class="bg-primary/5 border border-primary/20 rounded-xl p-4 max-w-sm mx-auto text-center space-y-1 shadow-md">
+                            <span class="uppercase-tight text-[9px] text-primary tracking-widest font-mono">RECOMPENSA DE DESEMPENHO</span>
+                            <h4 class="font-display text-lg font-black text-primary">+${data.xp_earned} XP ADICIONADOS</h4>
+                            <p class="text-[10px] text-muted-foreground">Estatísticas atualizadas. A tua sequência foi protegida.</p>
+                        </div>
+                    ` : ''}
+
+                    <!-- Detailed Correction Grid -->
+                    <div class="space-y-4 max-w-xl mx-auto">
+                        <h3 class="font-display text-sm font-bold border-b border-border pb-2">Revisão Detalhada da Prova</h3>
+                        <div class="grid grid-cols-1 gap-2">
+                            ${Object.keys(data.feedback).map(qNum => {
+                const f = data.feedback[qNum];
+                return `
+                                    <div class="flex items-center justify-between bg-card border ${f.is_correct ? 'border-success/20 bg-success/5' : 'border-destructive/20 bg-destructive/5'} rounded-lg p-3 text-xs">
+                                        <div class="flex items-center gap-3">
+                                            <span class="h-6 w-6 rounded-full ${f.is_correct ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'} flex items-center justify-center font-mono font-bold">${qNum}</span>
+                                            <span class="font-medium text-foreground">Questão ${qNum}</span>
+                                        </div>
+                                        <div class="flex items-center gap-4 font-mono">
+                                            <span class="text-muted-foreground">Tua resposta: <strong class="${f.is_correct ? 'text-success' : 'text-destructive'}">${f.user_answer || 'Nenhuma'}</strong></span>
+                                            ${!f.is_correct ? `<span class="text-success">Correto: <strong>${f.correct_answer}</strong></span>` : ''}
+                                        </div>
+                                    </div>
+                                `;
+            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="flex items-center gap-3 justify-center pt-4">
+                        <a href="dashboard.html" class="btn-primary w-36 h-11 uppercase-tight text-xs inline-flex items-center justify-center shadow-md">Voltar ao Painel</a>
+                        <button onclick="window.location.reload()" class="btn-primary w-36 h-11 uppercase-tight text-xs bg-muted border border-border text-foreground hover:bg-accent hover:text-foreground inline-flex items-center justify-center">Tentar de Novo</button>
+                    </div>
+                </div>
+            `;
+
+        } else {
+            showSubmitError(data.error || 'Erro ao processar as respostas.');
+        }
+    } catch (err) {
+        console.error('Erro ao submeter simulado:', err);
+        showSubmitError('Erro de ligação ao servidor Jango.');
+    }
+}
+
+function showSubmitError(msg) {
+    const submitBtn = document.getElementById('btn-submit-simulado');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submeter Exame para o Sekulo';
+    }
+    const errEl = document.getElementById('simulado-error');
+    if (errEl) {
+        errEl.textContent = msg;
+        errEl.classList.remove('hidden');
+        errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
 

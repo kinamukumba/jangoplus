@@ -12,8 +12,9 @@
 </head>
 <body class="bg-background text-foreground font-sans min-h-screen pb-20">
     
-    <div class="min-h-screen bg-background pb-12">
-        <header class="px-5 pt-6 pb-4 flex items-center justify-between border-b border-border">
+    <div class="min-h-screen bg-background pb-12 md:pl-64">
+        <!-- Header -->
+        <header class="px-5 pt-6 pb-4 md:px-8 md:py-6 flex items-center justify-between border-b border-border max-w-md md:max-w-5xl mx-auto">
             <div>
                 <div class="uppercase-tight text-[10px] text-muted-foreground">JANGO+</div>
                 <div class="font-display text-base font-bold">PERFIL</div>
@@ -23,65 +24,99 @@
             </a>
         </header>
 
-        <main class="px-5 pt-6 space-y-6 max-w-md mx-auto">
+        <main class="px-5 pt-6 pb-12 md:px-8 md:py-8 space-y-6 max-w-md md:max-w-5xl mx-auto">
             
-            <section class="flex flex-col items-center text-center">
-                <div class="h-24 w-24 rounded-full bg-muted flex items-center justify-center mb-4 border-4 border-border">
-                    <span class="font-display text-3xl font-bold text-muted-foreground">👤</span>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <!-- Coluna Esquerda: Informações básicas do perfil (4/12) -->
+                <div class="md:col-span-4 flex flex-col items-center text-center bg-card/40 border border-border/60 rounded-xl p-6 h-fit">
+                    <div class="h-24 w-24 rounded-full bg-muted flex items-center justify-center mb-4 border-4 border-border">
+                        <span class="font-display text-3xl font-bold text-muted-foreground">👤</span>
+                    </div>
+                    <h1 id="profile-name" class="font-display text-2xl font-bold">Carregando...</h1>
+                    <p id="profile-email" class="text-sm text-muted-foreground mt-1">...</p>
                 </div>
-                <h1 id="profile-name" class="font-display text-2xl font-bold">Carregando...</h1>
-                <p id="profile-email" class="text-sm text-muted-foreground mt-1">...</p>
-            </section>
 
-            <section class="grid grid-cols-2 gap-4 bg-card border border-border rounded-lg p-5 mt-6">
-                <div>
-                    <div class="uppercase-tight text-[10px] text-muted-foreground">XP Total</div>
-                    <div id="profile-xp" class="font-display text-2xl font-bold mt-1 text-primary">0</div>
-                </div>
-                <div>
-                    <div class="uppercase-tight text-[10px] text-muted-foreground">Liga</div>
-                    <div id="profile-league" class="font-display text-lg font-bold mt-1 uppercase text-sekulo">Bronze</div>
-                </div>
-            </section>
+                <!-- Coluna Direita: XP, Estatísticas e Metas (8/12) -->
+                <div class="md:col-span-8 space-y-6">
+                    <!-- Cards Rápidos de XP/Liga -->
+                    <section class="grid grid-cols-2 gap-4 bg-card border border-border rounded-lg p-5">
+                        <div>
+                            <div class="uppercase-tight text-[10px] text-muted-foreground">XP Total</div>
+                            <div id="profile-xp" class="font-display text-2xl font-bold mt-1 text-primary">0</div>
+                        </div>
+                        <div>
+                            <div class="uppercase-tight text-[10px] text-muted-foreground">Liga</div>
+                            <div id="profile-league" class="font-display text-lg font-bold mt-1 uppercase text-sekulo">Bronze</div>
+                        </div>
+                    </section>
 
-            <section class="bg-card border border-border rounded-lg p-5">
-                <h2 class="uppercase-tight text-xs mb-4">Estatísticas Detalhadas</h2>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-muted-foreground">Taxa de Acerto Geral</span>
-                        <span class="font-mono">--%</span>
-                    </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-muted-foreground">Missões Completadas</span>
-                        <span class="font-mono">--</span>
-                    </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-muted-foreground">Simulados Realizados</span>
-                        <span class="font-mono">--</span>
-                    </div>
+                    <!-- Estatísticas Detalhadas -->
+                    <section class="bg-card border border-border rounded-lg p-5">
+                        <h2 class="uppercase-tight text-xs mb-4 font-bold">Estatísticas Detalhadas</h2>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-muted-foreground">Taxa de Acerto Geral</span>
+                                <span id="stat-accuracy-rate" class="font-mono">0%</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-muted-foreground">Missões Completadas</span>
+                                <span id="stat-completed-missions" class="font-mono">0 / 0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-muted-foreground">Simulados Realizados</span>
+                                <span id="stat-total-quizzes" class="font-mono">0</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Objetivos e Rumo Profissional -->
+                    <section class="bg-card border border-border rounded-lg p-5">
+                        <h2 class="uppercase-tight text-xs mb-4 font-bold">Objetivos e Rumo Profissional</h2>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-muted-foreground">Universidade de Sonho</span>
+                                <span id="profile-university" class="font-semibold text-xs text-right max-w-[250px] truncate text-primary">Não definida</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-muted-foreground">Curso Alvo</span>
+                                <span id="profile-course" class="font-semibold text-xs text-right max-w-[250px] truncate text-primary">Não definido</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-muted-foreground">Tempo Diário de Estudo</span>
+                                <span id="profile-hours" class="font-semibold text-xs text-right text-primary">0h / dia</span>
+                            </div>
+                        </div>
+                    </section>
                 </div>
-            </section>
+            </div>
+            
         </main>
     </div>
 
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
-        <div class="max-w-md mx-auto flex items-center justify-around h-16 px-4 text-xs font-medium text-muted-foreground">
-            <a href="dashboard.html" class="flex flex-col items-center gap-1 transition-colors hover:text-foreground">
+    <!-- Navigation Sidebar / Bottom Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 md:top-0 md:bottom-auto md:right-auto md:w-64 md:h-screen bg-card border-t md:border-t-0 md:border-r border-border z-50 transition-all duration-300">
+        <div class="max-w-md md:max-w-none mx-auto md:mx-0 flex md:flex-col items-center justify-around md:justify-start md:items-stretch h-16 md:h-full px-4 md:px-6 md:py-8 text-xs font-medium text-muted-foreground gap-6">
+            <!-- Logo inside sidebar (hidden on mobile, visible on desktop) -->
+            <div class="hidden md:flex flex-col mb-8 border-b border-border pb-4">
+                <span class="uppercase-tight text-[10px] text-muted-foreground">JANGO+</span>
+                <span class="font-display text-lg font-bold text-foreground">SEKULO</span>
+            </div>
+            
+            <a href="dashboard.html" class="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 transition-colors hover:text-foreground md:py-3 md:px-4 md:rounded-lg md:hover:bg-muted/30">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                <span>Home</span>
+                <span class="md:text-sm md:font-semibold">Home</span>
             </a>
-            <a href="roadmap.html" class="flex flex-col items-center gap-1 transition-colors hover:text-foreground">
+            <a href="roadmap.html" class="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 transition-colors hover:text-foreground md:py-3 md:px-4 md:rounded-lg md:hover:bg-muted/30">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span>Roadmap</span>
+                <span class="md:text-sm md:font-semibold">Roadmap</span>
             </a>
-            <a href="sekulo.html" class="flex flex-col items-center gap-1 transition-colors hover:text-foreground">
+            <a href="sekulo.html" class="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 transition-colors hover:text-foreground md:py-3 md:px-4 md:rounded-lg md:hover:bg-muted/30">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                <span>Missão</span>
+                <span class="md:text-sm md:font-semibold">Missão</span>
             </a>
-            <a href="perfil.html" class="flex flex-col items-center gap-1 text-foreground transition-colors hover:text-foreground">
+            <a href="perfil.html" class="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 text-foreground transition-colors hover:text-foreground md:py-3 md:px-4 md:rounded-lg md:bg-muted/30">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span>Perfil</span>
+                <span class="md:text-sm md:font-semibold">Perfil</span>
             </a>
         </div>
     </nav>

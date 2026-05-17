@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalizar o teu Estudo - Jango+ Sekulo</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script src="../assets/js/tailwind-config.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+        .step-transition {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="px-6 py-5 border-b border-border flex items-center justify-between">
+        <div>
+            <div class="uppercase-tight text-[10px] text-muted-foreground tracking-widest">JANGO+</div>
+            <div class="font-display text-base font-bold tracking-tight">SEKULO ONBOARDING</div>
+        </div>
+        <div id="step-indicator" class="text-xs text-muted-foreground font-mono">Passo 1 de 2</div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center px-5 py-8">
+        <div class="w-full max-w-md bg-card border border-border rounded-xl p-6 md:p-8 relative overflow-hidden shadow-2xl">
+            
+            <!-- Progress Bar inside Card -->
+            <div class="absolute top-0 left-0 w-full h-[3px] bg-muted">
+                <div id="bar-progress" class="h-full bg-primary w-1/2 transition-all duration-300"></div>
+            </div>
+
+            <!-- STEP 1: Personal Profile -->
+            <div id="step-1" class="step-transition space-y-6">
+                <div class="space-y-2">
+                    <h2 class="font-display text-2xl font-bold tracking-tight">Olá! Vamos preparar o teu plano.</h2>
+                    <p class="text-xs text-muted-foreground">
+                        Precisamos de entender a tua rotina e o teu foco para desenhar a melhor rota de estudos.
+                    </p>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="block uppercase-tight text-[10px] text-muted-foreground tracking-wider">Quantas horas podes estudar por dia?</label>
+                    <div class="flex items-center gap-4 bg-muted/30 border border-border p-4 rounded-lg">
+                        <input type="range" id="study-hours" min="1" max="8" value="3" class="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary" />
+                        <span id="hours-val" class="font-display text-2xl font-bold text-primary w-12 text-center font-mono">3h</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="motivation" class="block uppercase-tight text-[10px] text-muted-foreground tracking-wider">Qual é a tua principal motivação?</label>
+                    <textarea id="motivation" rows="3" placeholder="Ex: Entrar no curso dos meus sonhos e dar orgulho à minha família..." class="input-base w-full p-3 bg-muted/20 text-sm resize-none" required></textarea>
+                </div>
+
+                <button id="btn-to-step2" class="btn-primary w-full h-12 uppercase-tight text-xs mt-4">
+                    Continuar para Metas
+                </button>
+            </div>
+
+            <!-- STEP 2: Academic Goals -->
+            <div id="step-2" class="step-transition hidden space-y-5">
+                <div class="space-y-1">
+                    <h2 class="font-display text-2xl font-bold tracking-tight">O teu Alvo Académico</h2>
+                    <p class="text-xs text-muted-foreground">
+                        Diz-nos para onde queres entrar. O Sekulo vai focar exatamente no teu exame.
+                    </p>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="university" class="block uppercase-tight text-[10px] text-muted-foreground">Universidade de Destino</label>
+                    <select id="university" class="input-base w-full bg-muted/20 text-sm h-11 px-3">
+                        <option value="Universidade Agostinho Neto - UAN" selected>Universidade Agostinho Neto (UAN)</option>
+                        <option value="Universidade Católica de Angola - UCAN">Universidade Católica (UCAN)</option>
+                        <option value="ISPTEC - Instituto Superior Politécnico de Tecnologias e Ciências">ISPTEC</option>
+                        <option value="Universidade Lusíada de Angola - ULA">Universidade Lusíada (ULA)</option>
+                        <option value="Universidade Metodista de Angola - UMA">Universidade Metodista (UMA)</option>
+                        <option value="Outra Universidade de Luanda">Outra Universidade em Luanda</option>
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block uppercase-tight text-[10px] text-muted-foreground">Área de Estudos</label>
+                    <div class="grid grid-cols-2 gap-2" id="area-container">
+                        <button type="button" data-area="Engenharia" class="area-card p-3 rounded-lg border border-border bg-muted/10 text-left hover:border-primary transition-all select-none">
+                            <span class="text-xl block mb-1">🛠️</span>
+                            <span class="font-display text-xs font-bold block">Engenharias</span>
+                            <span class="text-[9px] text-muted-foreground block">Matemática & Física</span>
+                        </button>
+                        <button type="button" data-area="Saude" class="area-card p-3 rounded-lg border border-border bg-muted/10 text-left hover:border-primary transition-all select-none">
+                            <span class="text-xl block mb-1">🩺</span>
+                            <span class="font-display text-xs font-bold block">Saúde / Medicina</span>
+                            <span class="text-[9px] text-muted-foreground block">Biologia & Química</span>
+                        </button>
+                        <button type="button" data-area="Sociais" class="area-card p-3 rounded-lg border border-border bg-muted/10 text-left hover:border-primary transition-all select-none">
+                            <span class="text-xl block mb-1">⚖️</span>
+                            <span class="font-display text-xs font-bold block">Ciências Sociais</span>
+                            <span class="text-[9px] text-muted-foreground block">História & Português</span>
+                        </button>
+                        <button type="button" data-area="Economicas" class="area-card p-3 rounded-lg border border-border bg-muted/10 text-left hover:border-primary transition-all select-none">
+                            <span class="text-xl block mb-1">📊</span>
+                            <span class="font-display text-xs font-bold block">Economia / Gestão</span>
+                            <span class="text-[9px] text-muted-foreground block">Matemática & Português</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="specific-course" class="block uppercase-tight text-[10px] text-muted-foreground">Curso Específico</label>
+                    <input type="text" id="specific-course" placeholder="Ex: Engenharia Informática, Direito, Medicina..." class="input-base w-full h-11 px-3 bg-muted/20 text-sm" required />
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button id="btn-back-to-step1" class="w-1/3 h-12 uppercase-tight text-xs border border-border text-muted-foreground hover:text-foreground rounded-md transition-colors">
+                        Voltar
+                    </button>
+                    <button id="btn-submit" class="w-2/3 h-12 btn-primary uppercase-tight text-xs">
+                        Gerar o meu Roadmap
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Loading / AI Generation -->
+            <div id="step-loading" class="step-transition hidden space-y-6 flex flex-col items-center justify-center text-center py-8">
+                <!-- Circular Pulsing Avatar -->
+                <div class="h-24 w-24 rounded-full bg-sekulo flex items-center justify-center font-display font-black text-4xl text-sekulo-foreground shadow-[0_0_30px_rgba(255,255,255,0.08)] animate-pulse relative">
+                    S
+                    <div class="absolute inset-0 rounded-full border border-sekulo animate-ping opacity-50"></div>
+                </div>
+
+                <div class="space-y-2 max-w-xs">
+                    <h3 class="font-display text-xl font-bold tracking-tight">O Sekulo está a analisar...</h3>
+                    <p id="loading-message" class="text-xs text-muted-foreground min-h-[32px] italic transition-opacity duration-300">
+                        A afiar as canetas e a rever os padrões de exame...
+                    </p>
+                </div>
+
+                <!-- Small progress status -->
+                <div class="w-full max-w-[200px] h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div id="ai-progress-bar" class="h-full bg-primary w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <!-- Error message container -->
+            <div id="error-box" class="hidden mt-4 text-xs text-destructive text-center font-medium"></div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-[10px] text-muted-foreground border-t border-border">
+        Jango+ Sekulo © 2026. A consistência aprova.
+    </footer>
+
+    <!-- Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elements
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const stepLoading = document.getElementById('step-loading');
+            
+            const btnToStep2 = document.getElementById('btn-to-step2');
+            const btnBackToStep1 = document.getElementById('btn-back-to-step1');
+            const btnSubmit = document.getElementById('btn-submit');
+            
+            const studyHoursRange = document.getElementById('study-hours');
+            const hoursVal = document.getElementById('hours-val');
+            
+            const barProgress = document.getElementById('bar-progress');
+            const stepIndicator = document.getElementById('step-indicator');
+            const errorBox = document.getElementById('error-box');
+            
+            let selectedArea = '';
+
+            // Dynamic hours label
+            studyHoursRange.addEventListener('input', (e) => {
+                hoursVal.textContent = `${e.target.value}h`;
+            });
+
+            // Handle Area Selection Cards
+            const areaCards = document.querySelectorAll('.area-card');
+            areaCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    areaCards.forEach(c => {
+                        c.classList.remove('border-primary', 'bg-primary/5');
+                        c.classList.add('border-border', 'bg-muted/10');
+                    });
+                    card.classList.remove('border-border', 'bg-muted/10');
+                    card.classList.add('border-primary', 'bg-primary/5');
+                    selectedArea = card.getAttribute('data-area');
+                    errorBox.classList.add('hidden');
+                });
+            });
+
+            // Navigation
+            btnToStep2.addEventListener('click', () => {
+                const motivation = document.getElementById('motivation').value.trim();
+                if (!motivation) {
+                    showError('Por favor, diz-nos qual é a tua motivação de estudo.');
+                    return;
+                }
+                errorBox.classList.add('hidden');
+                
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                barProgress.style.width = '100%';
+                stepIndicator.textContent = 'Passo 2 de 2';
+            });
+
+            btnBackToStep1.addEventListener('click', () => {
+                step2.classList.add('hidden');
+                step1.classList.remove('hidden');
+                barProgress.style.width = '50%';
+                stepIndicator.textContent = 'Passo 1 de 2';
+                errorBox.classList.add('hidden');
+            });
+
+            function showError(msg) {
+                errorBox.textContent = msg;
+                errorBox.classList.remove('hidden');
+            }
+
+            // Submit Onboarding
+            btnSubmit.addEventListener('click', async () => {
+                const university = document.getElementById('university').value;
+                const specificCourse = document.getElementById('specific-course').value.trim();
+                const studyHours = studyHoursRange.value;
+                const motivation = document.getElementById('motivation').value.trim();
+
+                if (!selectedArea) {
+                    showError('Por favor, seleciona uma área de estudos.');
+                    return;
+                }
+                if (!specificCourse) {
+                    showError('Por favor, insere o teu curso de destino.');
+                    return;
+                }
+
+                errorBox.classList.add('hidden');
+                
+                // Show Loading
+                step2.classList.add('hidden');
+                stepLoading.classList.remove('hidden');
+                stepIndicator.classList.add('hidden');
+                barProgress.parentElement.classList.add('hidden'); // hide bar
+
+                // Animate Loading Messages
+                const messages = [
+                    "Sekulo está a analisar a tua rotina...",
+                    "A consultar a base de exames de Angola...",
+                    "A desenhar o teu plano de estudos personalizado...",
+                    "A organizar os módulos de Matemática e Física...",
+                    "Quase pronto... Prepare-se para a sua rotina!",
+                    "Concluído! A tua jornada começa agora."
+                ];
+
+                let msgIndex = 0;
+                const msgEl = document.getElementById('loading-message');
+                const progBar = document.getElementById('ai-progress-bar');
+                
+                const interval = setInterval(() => {
+                    if (msgIndex < messages.length - 1) {
+                        msgIndex++;
+                        msgEl.style.opacity = '0';
+                        setTimeout(() => {
+                            msgEl.textContent = messages[msgIndex];
+                            msgEl.style.opacity = '1';
+                        }, 200);
+                        
+                        progBar.style.width = `${(msgIndex / (messages.length - 1)) * 100}%`;
+                    }
+                }, 1300);
+
+                // Call Onboarding API
+                try {
+                    const response = await fetch('../backend/api/users/onboard.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            university,
+                            course_category: selectedArea,
+                            specific_course: specificCourse,
+                            study_hours_day: studyHours,
+                            motivation
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        // Wait for progress animation to get close to 100% then redirect
+                        setTimeout(() => {
+                            clearInterval(interval);
+                            window.location.href = 'dashboard.html';
+                        }, 6000);
+                    } else {
+                        clearInterval(interval);
+                        showErrorFormMode(data.error || 'Erro ao gerar o teu roadmap.');
+                    }
+                } catch (err) {
+                    clearInterval(interval);
+                    showErrorFormMode('Erro ao ligar ao servidor local.');
+                    console.error(err);
+                }
+            });
+
+            function showErrorFormMode(msg) {
+                stepLoading.classList.add('hidden');
+                step2.classList.remove('hidden');
+                stepIndicator.classList.remove('hidden');
+                barProgress.parentElement.classList.remove('hidden');
+                showError(msg);
+            }
+        });
+    </script>
+</body>
+</html>

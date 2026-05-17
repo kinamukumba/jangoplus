@@ -21,22 +21,23 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
-// Buscar dados do usuário e stats (usando JOIN)
-$stmt = $pdo->prepare('
-    SELECT u.id, u.email, u.display_name, u.onboarded_at, s.xp_total, s.current_streak, s.delay_days, s.weekly_xp, s.league 
-    FROM users u 
-    LEFT JOIN user_stats s ON u.id = s.user_id 
-    WHERE u.id = ?
-');
-$stmt->execute([$userId]);
-$userData = $stmt->fetch();
+try {
+    // Buscar todos os nós do roadmap em ordem
+    $stmt = $pdo->prepare('
+        SELECT id, subject, topic, description, order_num, status 
+        FROM user_roadmap 
+        WHERE user_id = ? 
+        ORDER BY order_num ASC
+    ');
+    $stmt->execute([$userId]);
+    $roadmap = $stmt->fetchAll();
 
-if ($userData) {
     echo json_encode([
         'success' => true,
-        'user' => $userData
+        'roadmap' => $roadmap
     ]);
-} else {
-    http_response_code(404);
-    echo json_encode(['error' => 'Usuário não encontrado']);
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Erro interno ao consultar o roadmap: ' . $e->getMessage()]);
 }

@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
 );
 
 -- Trigger para inicializar stats no momento de criar o usuário
+DROP TRIGGER IF EXISTS after_user_insert;
 DELIMITER //
 CREATE TRIGGER after_user_insert
 AFTER INSERT ON users
@@ -67,3 +68,29 @@ BEGIN
     INSERT INTO user_stats (user_id) VALUES (NEW.id);
 END;//
 DELIMITER ;
+
+-- Respostas do Inquérito de Onboarding
+CREATE TABLE IF NOT EXISTS user_onboarding (
+    user_id INT PRIMARY KEY,
+    university VARCHAR(150) NOT NULL,
+    course_category VARCHAR(100) NOT NULL, -- e.g., 'Engenharia', 'Saude', 'Sociais', 'Economicas'
+    specific_course VARCHAR(150) NOT NULL,  -- e.g., 'Engenharia Informática', 'Medicina'
+    study_hours_day DECIMAL(3,1) DEFAULT 2.0,
+    motivation TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Roadmap Personalizado Gerado
+CREATE TABLE IF NOT EXISTS user_roadmap (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    subject VARCHAR(100) NOT NULL,      -- e.g. 'Matemática', 'Física'
+    topic VARCHAR(150) NOT NULL,        -- e.g. 'Cinemática Vetorial'
+    description TEXT,                   -- Breve descrição da IA sobre o que focar
+    order_num INT NOT NULL,             -- Ordem sequencial
+    status ENUM('locked', 'available', 'completed') DEFAULT 'locked',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+

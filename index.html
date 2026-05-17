@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Jango+ Sekulo</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script src="assets/js/tailwind-config.js"></script>
+
+    <!-- App Logic -->
+    <script src="assets/js/auth.js" defer></script>
+</head>
+<body class="bg-background text-foreground font-sans min-h-screen">
+    
+    <div class="min-h-screen flex flex-col items-center justify-center px-5 py-10">
+        <div class="w-full max-w-sm">
+            <!-- Branding -->
+            <div class="flex flex-col items-center text-center mb-10">
+                <div class="h-14 w-14 rounded-md bg-foreground text-background flex items-center justify-center font-display text-2xl font-bold mb-4">
+                    J+
+                </div>
+                <h1 class="font-display text-4xl font-bold tracking-tight">Jango+</h1>
+                <p class="text-sm text-muted-foreground mt-3 max-w-xs">
+                    Plataforma de preparação para o exame de acesso ao ensino superior.
+                </p>
+            </div>
+
+            <!-- Login / Signup Form -->
+            <form id="auth-form" class="space-y-4 bg-card border border-border rounded-lg p-6">
+                <div class="mb-2">
+                    <h2 id="form-title" class="font-display text-lg font-semibold">Entrar</h2>
+                    <p id="form-subtitle" class="text-xs text-muted-foreground mt-1">
+                        Acede à tua conta para continuar o estudo.
+                    </p>
+                </div>
+
+                <div id="name-field" class="space-y-1.5 hidden">
+                    <label for="name" class="uppercase-tight text-[10px]">Nome</label>
+                    <input type="text" id="name" placeholder="O teu nome" class="input-base" />
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="email" class="uppercase-tight text-[10px]">Email</label>
+                    <input type="email" id="email" required autocomplete="email" class="input-base" />
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="password" class="uppercase-tight text-[10px]">Palavra-passe</label>
+                    <input type="password" id="password" required minlength="6" autocomplete="current-password" class="input-base" />
+                </div>
+
+                <div id="error-message" class="text-destructive text-xs hidden"></div>
+
+                <button type="submit" id="submit-btn" class="btn-primary w-full uppercase-tight text-xs h-11">
+                    Entrar
+                </button>
+
+                <button type="button" id="toggle-mode-btn" class="w-full text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    Ainda não tenho conta
+                </button>
+            </form>
+
+            <p class="text-[11px] text-center text-muted-foreground mt-6">
+                <a href="#" class="underline">Voltar</a>
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

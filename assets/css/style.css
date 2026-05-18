@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+/* Segoe UI is a system font — no external import needed */
 
 html {
     color-scheme: dark;
@@ -30,6 +30,7 @@ body {
     font-size: 0.875rem;
     line-height: 1.25rem;
 }
+
 .input-base:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px oklch(0.55 0.01 70);
@@ -48,6 +49,7 @@ body {
     background-color: oklch(0.97 0.005 80);
     color: oklch(0.12 0.005 60);
 }
+
 .btn-primary:hover {
     background-color: rgb(247 247 247 / 0.9);
 }

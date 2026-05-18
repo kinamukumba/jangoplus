@@ -30,9 +30,9 @@ const tailwindConfig = {
         "sekulo-foreground": "oklch(0.12 0.005 60)"
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        display: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
-        mono: ["ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "monospace"]
+        sans: ["Segoe UI", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        display: ["Segoe UI", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        mono: ["Cascadia Code", "Consolas", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"]
       }
     }
   }

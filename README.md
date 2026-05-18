@@ -1,231 +1,75 @@
-# Documentação Técnica - Jango+ Sekulo
+# Jango+ Sekulo
 
-**Data de Geração:** 11 de Maio de 2026  
-**Versão do Projeto:** 1.0.0  
-**Status:** Em Desenvolvimento
+**Versão:** 2.0.0  
+**Última Actualização:** 18 de Maio de 2026  
+**Status:** Em Desenvolvimento Activo
+
+> Plataforma web de gamificação e preparação para exames de acesso ao ensino superior em Angola. Disciplina, missão diária e consequência — com o Sekulo a guiar cada passo.
 
 ---
 
 ## 📋 Índice
 
-1. [Visão Geral](#visão-geral)
-2. [Stack Tecnológico](#stack-tecnológico)
-3. [Arquitetura do Projeto](#arquitetura-do-projeto)
-4. [Requisitos do Sistema](#requisitos-do-sistema)
-5. [Instalação e Configuração](#instalação-e-configuração)
-6. [Execução do Projeto](#execução-do-projeto)
-7. [Estrutura de Pastas](#estrutura-de-pastas)
-8. [Principais Funcionalidades](#principais-funcionalidades)
-9. [Base de Dados](#base-de-dados)
-10. [Scripts Disponíveis](#scripts-disponíveis)
-11. [Troubleshooting](#troubleshooting)
+1. [Visão Geral](#-visão-geral)
+2. [Stack Tecnológico](#-stack-tecnológico)
+3. [Arquitectura do Projecto](#-arquitectura-do-projecto)
+4. [Estrutura de Pastas](#-estrutura-de-pastas)
+5. [Base de Dados](#-base-de-dados)
+6. [API REST (Backend)](#-api-rest-backend)
+7. [Principais Funcionalidades](#-principais-funcionalidades)
+8. [Instalação e Configuração](#-instalação-e-configuração)
+9. [Variáveis de Ambiente](#-variáveis-de-ambiente)
+10. [Troubleshooting](#-troubleshooting)
 
 ---
 
 ## 🎯 Visão Geral
 
-**Jango+ — Sekulo** é uma plataforma web de **gamificação e treinamento académico** com foco em preparação para exames. O projeto combina:
+**Jango+ Sekulo** é uma plataforma de preparação académica para estudantes angolanos que concorrem ao ensino superior. O sistema combina gamificação, inteligência artificial (Google Gemini) e pressão académica real para maximizar a preparação do candidato.
 
-- 🎮 **Sistema de gamificação** com XP, rankings e missões diárias
-- 📚 **Módulos de treino** organizados por disciplina e tópico
-- 📊 **Estatísticas e acompanhamento** de progresso do utilizador
-- 🏆 **Ranking competitivo** entre utilizadores
-- ⚡ **Interface moderna e responsiva**
+### O que é o Sekulo?
+O Sekulo é o "mestre" da plataforma — uma persona severa, directa e profundamente focada que guia os estudantes com honestidade brutal. Gera roadmaps personalizados, missões diárias, quizzes e avalia simulados de acesso com veredictos sem rodeios.
 
-**Público-alvo:** Estudantes que preparam-se para exames (ex.: exame final em 30 de Novembro de 2026)
-
-**Missão:** Disciplina, missão diária e consequência para preparação académica efectiva
+### Público-alvo
+Estudantes angolanos a preparar-se para exames de acesso às universidades nacionais (UAN, UCAN, etc.) nas áreas de Engenharia, Saúde, Ciências Sociais e Económicas.
 
 ---
 
 ## 🛠 Stack Tecnológico
 
-### Frontend
-| Tecnologia | Versão | Função |
-|-----------|--------|--------|
-| **React** | 19.2.0 | Framework UI principal |
-| **TypeScript** | 5.8.3 | Tipagem estática |
-| **TanStack Router** | 1.168.0 | Roteamento declarativo (File-based routing) |
-| **TanStack React Start** | 1.167.14 | Framework meta (Server-Side Rendering) |
-| **TanStack React Query** | 5.83.0 | Gestão de estado assíncrono |
-| **Tailwind CSS** | 4.2.1 | Estilização utilitária |
-| **Radix UI** | Múltiplas (v1.x) | Componentes unstyled e acessíveis |
-| **React Hook Form** | 7.71.2 | Gestão de formulários |
-| **Zod** | 3.24.2 | Validação de esquemas TypeScript |
-
-### Backend / Infraestrutura
-| Tecnologia | Versão | Função |
-|-----------|--------|--------|
-| **Supabase** | 2.104.0 | Backend-as-a-Service (PostgreSQL + Auth + Realtime) |
-| **Cloudflare Workers** | Via Vite Plugin | Deployment edge computing |
-| **Wrangler** | Config presente | CLI para Cloudflare |
-
-### Desenvolvimento
-| Ferramenta | Versão | Função |
-|-----------|--------|--------|
-| **Vite** | 7.3.1 | Build tool e dev server |
-| **Bun** | Lockfile presente | Gestor de pacotes/runtime |
-| **ESLint** | 9.32.0 | Linting JavaScript/TypeScript |
-| **Prettier** | 3.7.3 | Code formatter |
-| **@lovable.dev/vite-tanstack-config** | 1.4.0 | Config pré-configurada TanStack |
-
-### UI & UX
-| Biblioteca | Versão | Função |
-|-----------|--------|--------|
-| **Lucide React** | 0.575.0 | Ícones SVG |
-| **Recharts** | 2.15.4 | Gráficos e visualizações |
-| **Sonner** | 2.0.7 | Notificações toast |
-| **Embla Carousel** | 8.6.0 | Componentes carousel |
-| **React Day Picker** | 9.14.0 | Seletor de datas |
-| **date-fns** | 4.1.0 | Manipulação de datas |
-| **Class Variance Authority** | 0.7.1 | Variantes de componentes |
+| Camada | Tecnologia | Função |
+|---|---|---|
+| **Frontend** | HTML5 + Vanilla JS | Interface de utilizador |
+| **Estilização** | Tailwind CSS (CDN) | Utilitários CSS + dark mode |
+| **Tipografia** | Segoe UI (sistema) | Fonte nativa, sem dependências externas |
+| **Backend** | PHP 8.x | API REST e lógica de negócio |
+| **Base de Dados** | MySQL 8.x | Persistência de dados |
+| **Servidor Local** | XAMPP (Apache + MySQL) | Ambiente de desenvolvimento |
+| **IA Generativa** | Google Gemini 2.0 Flash | Roadmaps e veredictos dinâmicos |
 
 ---
 
-## 🏗 Arquitetura do Projeto
+## 🏗 Arquitectura do Projecto
 
-### Padrão Arquitetural
-- **Framework:** TanStack Start (Meta-framework sobre Vite + React Router)
-- **Roteamento:** File-based routing (arquivo `routeTree.gen.ts` é gerado automaticamente)
-- **Estado:** Combinação de React Context (Auth) + TanStack Query (async data)
-- **Deploy:** Cloudflare Workers (edge computing) + Supabase (backend)
-
-### Fluxo de Dados
+### Padrão Geral
 ```
-Usuario → UI (React) → React Query → Supabase Client → Supabase (PostgreSQL)
-         ↓ Auth Context (Sessão)
+Browser (HTML + Vanilla JS)
+        ↕  fetch() JSON
+Backend PHP (API REST stateless)
+        ↕  PDO
+MySQL Database
 ```
 
-### Contexto de Autenticação
-- **Provedor:** Supabase Auth (JWT-based)
-- **Hook:** `useAuth()` para acesso global à sessão do utilizador
-- **Persistência:** Supabase gerencia automaticamente token refresh
+### Autenticação
+- Baseada em **sessões PHP** (`session_start()`)
+- Login verifica `email + password_hash` na tabela `users`
+- Todas as rotas protegidas verificam `$_SESSION['user_id']`
+- Logout destrói a sessão com `session_destroy()`
 
----
-
-## ⚙️ Requisitos do Sistema
-
-### Requisitos Locais
-- **Node.js:** 18.x LTS ou superior
-- **Bun:** 1.0.0 ou superior (recomendado) OU npm/yarn/pnpm
-- **Git:** Para controlo de versão
-- **RAM:** Mínimo 4GB (6GB recomendado para build)
-- **Espaço em disco:** ~500MB para dependências
-
-### Requisitos Remotos
-- **Supabase Project:** Criado e configurado
-- **Cloudflare Account:** Com KV storage ativo (para edge data)
-- **Variáveis de Ambiente:** `.env.local` configurado
-
-### Sistema Operativo Suportado
-- Windows 10/11 ✅
-- macOS 12+ ✅
-- Linux (Ubuntu 20.04+) ✅
-
----
-
-## 📦 Instalação e Configuração
-
-### Passo 1: Clonar o Repositório
-```bash
-cd c:\Users\kinam\Desktop\jangoplus
-```
-
-### Passo 2: Instalar Dependências
-**Opção A: Com Bun (Recomendado)**
-```bash
-bun install
-```
-
-**Opção B: Com npm**
-```bash
-npm install
-```
-
-**Opção C: Com yarn**
-```bash
-yarn install
-```
-
-> **Nota:** O projeto usa `bun.lockb`. Se usar npm/yarn, será criado um `package-lock.json` ou `yarn.lock`.
-
-### Passo 3: Configurar Variáveis de Ambiente
-
-Criar arquivo `.env.local` na raiz do projeto:
-
-```env
-# Supabase Configuration
-VITE_SUPABASE_URL=https://iuqxhcgmywbrpcnflrbc.supabase.co
-VITE_SUPABASE_ANON_KEY=your_anon_key_here
-
-# Cloudflare Configuration (opcional para local)
-VITE_CLOUDFLARE_ACCOUNT_ID=your_account_id
-VITE_CLOUDFLARE_API_TOKEN=your_api_token
-```
-
-> **Como obter as credenciais:**
-> 1. Ir a https://supabase.com → Project Settings → API
-> 2. Copiar `Project URL` para `VITE_SUPABASE_URL`
-> 3. Copiar `anon public` key para `VITE_SUPABASE_ANON_KEY`
-
-### Passo 4: Configurar Supabase Localmente (Opcional)
-
-Se quiser testar com BD local:
-
-```bash
-# Instalar CLI do Supabase
-npm install -g supabase-cli
-
-# Iniciar Supabase local
-supabase start
-```
-
----
-
-## 🚀 Execução do Projeto
-
-### Ambiente de Desenvolvimento
-
-**Com Bun:**
-```bash
-bun run dev
-```
-
-**Com npm:**
-```bash
-npm run dev
-```
-
-A aplicação será disponível em: **http://localhost:5173**
-
-### Build para Produção
-
-**Com Bun:**
-```bash
-bun run build
-```
-
-**Com npm:**
-```bash
-npm run build
-```
-
-Saída: Pasta `dist/` com arquivos otimizados.
-
-### Preview da Build de Produção
-
-```bash
-npm run preview
-```
-
-Abre http://localhost:4173 com os arquivos de produção.
-
-### Build em Modo Desenvolvimento
-```bash
-npm run build:dev
-```
-
-Útil para debugging de builds.
+### Geração de Conteúdo com IA
+- O sistema tenta chamar a **Gemini 2.0 Flash API** para roadmaps personalizados, veredictos de simulados e feedback de missões
+- Se a `GEMINI_API_KEY` não estiver configurada ou a API falhar, usa **fallbacks determinísticos** locais de alta qualidade
+- Garante que a plataforma funciona 100% offline/sem chave de API
 
 ---
 
@@ -233,427 +77,342 @@ npm run build:dev
 
 ```
 jangoplus/
-├── src/
-│   ├── routes/                 # Páginas e layouts (file-based routing)
-│   │   ├── __root.tsx          # Layout raiz (HTML, Auth Context)
-│   │   ├── index.tsx           # Página home
-│   │   ├── auth.tsx            # Página autenticação
-│   │   ├── missao.tsx          # Missão diária
-│   │   ├── evolucao.tsx        # Evolução/progressão
-│   │   ├── ranking.tsx         # Ranking competitivo
-│   │   ├── treino.tsx          # Sistema de treino
-│   │   ├── simulado.*.tsx      # Simulados (exames)
-│   │   └── resultado.*.tsx     # Resultados
-│   │
-│   ├── components/
-│   │   ├── ui/                 # Componentes Radix UI (unstyled)
-│   │   │   ├── button.tsx
-│   │   │   ├── card.tsx
-│   │   │   ├── dialog.tsx
-│   │   │   ├── form.tsx
-│   │   │   ├── input.tsx
-│   │   │   └── ... (30+ componentes)
-│   │   │
-│   │   └── sekulo/             # Componentes de negócio customizados
-│   │       ├── ApprovalGauge.tsx    # Gauge de aprovação
-│   │       ├── XPBar.tsx            # Barra de experiência
-│   │       ├── LeagueBadge.tsx      # Badge de liga/divisão
-│   │       ├── Stat.tsx             # Componente de estatística
-│   │       └── ... (7+ componentes)
-│   │
-│   ├── lib/                    # Lógica de negócio e hooks
-│   │   ├── auth-context.tsx    # Contexto de autenticação
-│   │   ├── sekulo-config.ts    # Configuração central (data exame, labels)
-│   │   ├── sekulo-brain.ts     # Lógica de IA/algoritmos
-│   │   ├── sekulo-voice.ts     # Mensagens e voz da aplicação
-│   │   ├── mission.ts          # Lógica de missões
-│   │   ├── ranking.ts          # Cálculo de rankings
-│   │   ├── progression.ts      # Sistema de progressão
-│   │   ├── exams.ts            # Lógica de simulados
-│   │   ├── goals.ts            # Sistema de objetivos
-│   │   ├── leagues.ts          # Divisões/ligas
-│   │   ├── evolution.ts        # Evolução de stats
-│   │   ├── approval.ts         # Cálculo de aprovação
-│   │   ├── bloom.ts            # Algoritmo Bloom (spaced repetition?)
-│   │   ├── topics.ts           # Tópicos por disciplina
-│   │   ├── utils.ts            # Funções utilitárias
-│   │   └── ...
-│   │
-│   ├── hooks/                  # Custom React hooks
-│   │   └── use-mobile.tsx      # Detectar breakpoint mobile
-│   │
-│   ├── integrations/
-│   │   └── supabase/           # Cliente Supabase
-│   │       └── client.ts       # Instância do supabase
-│   │
-│   ├── assets/                 # Imagens, ícones, etc.
-│   ├── router.tsx              # Configuração do router
-│   ├── routeTree.gen.ts        # GERADO AUTOMATICAMENTE
-│   └── styles.css              # Estilos globais
+├── index.html                        # Página de Login / Registo
 │
-├── supabase/
-│   ├── config.toml             # Configuração do Supabase
-│   └── migrations/             # Migrações SQL do banco
-│       ├── 20260420*.sql       # Inicialização de tabelas
-│       ├── 20260421*.sql       # Adicionar campos
-│       ├── 20260422*.sql       # Índices e constrains
-│       ├── 20260504*.sql       # Alterações recentes
-│       └── ...
+├── utente/                           # Área autenticada do estudante
+│   ├── dashboard.html                # Painel principal (XP, streak, missão)
+│   ├── roadmap.html                  # Mapa de estudo personalizado
+│   ├── sekulo.html                   # Quiz diário com o Sekulo
+│   ├── simulado.html                 # Exame de acesso simulado (10 questões + timer)
+│   ├── perfil.html                   # Perfil e estatísticas do utilizador
+│   └── configuracoes.html            # Metas académicas e dados da conta
 │
-├── package.json                # Dependências e scripts
-├── tsconfig.json               # Configuração TypeScript
-├── vite.config.ts              # Configuração Vite
-├── wrangler.jsonc              # Configuração Cloudflare Workers
-├── eslint.config.js            # Regras ESLint
-├── bunfig.toml                 # Configuração Bun
-└── components.json             # Config do UI (shadcn/ui)
+├── backend/
+│   ├── config/
+│   │   └── database.php              # Conexão PDO ao MySQL
+│   └── api/
+│       ├── auth/
+│       │   ├── login.php             # POST /api/auth/login
+│       │   ├── register.php          # POST /api/auth/register
+│       │   └── logout.php            # POST /api/auth/logout
+│       └── users/
+│           ├── me.php                # GET  — dados básicos do utilizador
+│           ├── stats.php             # GET  — estatísticas completas (XP, liga, etc.)
+│           ├── onboard.php           # POST — onboarding + geração de roadmap
+│           ├── roadmap.php           # GET  — roadmap personalizado do utilizador
+│           ├── mission.php           # GET  — missão activa e quiz do dia
+│           ├── submit_mission.php    # POST — submeter respostas do quiz diário
+│           ├── simulado.php          # GET  — gerar simulado de 10 perguntas
+│           ├── submit_simulado.php   # POST — corrigir simulado + veredicto Sekulo
+│           ├── update_settings.php   # POST — actualizar perfil e metas
+│           └── ranking.php           # GET  — ranking semanal e posição
+│
+├── assets/
+│   ├── css/
+│   │   └── style.css                 # Estilos globais (variáveis, utilitários base)
+│   └── js/
+│       ├── tailwind-config.js        # Configuração Tailwind (cores, fontes)
+│       ├── app.js                    # Lógica JS principal (dashboard, quiz, simulado)
+│       └── auth.js                   # Lógica JS de autenticação
+│
+├── database.sql                      # Schema completo da base de dados
+├── .env                              # Variáveis de ambiente (não versionar!)
+├── .env.example                      # Exemplo de configuração
+└── README.md                         # Este ficheiro
 ```
-
----
-
-## 🎮 Principais Funcionalidades
-
-### 1. **Autenticação**
-- Signup/Login via Supabase
-- Google OAuth (se configurado)
-- Sessão persistente
-- Logout
-
-### 2. **Missão Diária**
-- Missão única por dia
-- XP progressivo por missão completada
-- Impacto em ranking
-- Rollover semanal
-
-### 3. **Sistema de Treino**
-- Organizações por disciplina (BIO, QUI, FIS, LP, MAT, REV)
-- Subtópicos por disciplina
-- Simulação de treino com feedback
-
-### 4. **Simulados/Exames**
-- Simulados com múltiplas questões
-- Cronómetro para timed exams
-- Resultados e análise de desempenho
-- Histórico de tentativas
-
-### 5. **Ranking**
-- Ranking global de utilizadores
-- Divisão em ligas por XP
-- Vizinhos (top 3 antes/depois)
-- Snapshot de ranking por semana
-
-### 6. **Progressão/Evolução**
-- XP por missão
-- Níveis de aprovação
-- Delta badges (progresso relativo)
-- Urgency banner (dias até exame)
-
-### 7. **Gamificação**
-- XP points
-- Badges de conquista
-- Ligas competitivas
-- Estatísticas personalizadas
 
 ---
 
 ## 🗄 Base de Dados
 
-### Provedor
-- **Supabase** (PostgreSQL gerido)
-- **Realtime:** Habilitado para atualizações em tempo real
-- **Auth:** JWT com Refresh tokens
+### Schema resumido (`database.sql`)
 
-### Principais Tabelas (inferidas)
 ```sql
--- Utilizadores (gerido por Supabase Auth)
-auth.users
+-- Utilizadores da plataforma
+users (id, display_name, email, password_hash, created_at)
 
--- Tabelas de negócio (em supabase/migrations/)
-users_stats          -- Estatísticas globais
-daily_missions       -- Missões por utilizador/dia
-exam_attempts        -- Tentativas de simulados
-ranking_snapshots    -- Histórico de ranking
-user_leagues         -- Liga/divisão do utilizador
--- ... e outras (ver migrações SQL)
+-- Estatísticas de gamificação (criadas automaticamente por trigger)
+user_stats (user_id, xp_total, weekly_xp, current_streak, delay_days, league)
+
+-- Dados de onboarding e metas académicas
+user_onboarding (user_id, university, course_category, specific_course,
+                 study_hours_day, motivation, exam_date)
+
+-- Roadmap de estudo personalizado (6 nós gerados pela IA)
+user_roadmap (id, user_id, order_num, topic, description, status, created_at)
+
+-- Histórico de tentativas em exames e quizzes
+exam_attempts (id, user_id, score_percentage, attempted_at)
 ```
 
-### Project ID Supabase
+### Liga / XP
+| Liga | XP Mínimo |
+|---|---|
+| Bronze | 0 XP |
+| Prata | 1 000 XP |
+| Ouro | 3 000 XP |
+| Diamante | *(reservado)* |
+| Sekulo | *(reservado)* |
+
+### Recompensas
+| Evento | XP Ganho |
+|---|---|
+| Passar missão diária (quiz) | +150 XP |
+| Aprovar simulado (≥ 70%) | +500 XP |
+
+---
+
+## 🔌 API REST (Backend)
+
+Todas as rotas retornam `Content-Type: application/json`. As rotas marcadas com 🔒 requerem sessão activa.
+
+### Autenticação
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/backend/api/auth/register.php` | Registo de novo utilizador |
+| `POST` | `/backend/api/auth/login.php` | Login com email + password |
+| `POST` | `/backend/api/auth/logout.php` | 🔒 Terminar sessão |
+
+### Utilizador
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/backend/api/users/me.php` | 🔒 Dados do utilizador autenticado |
+| `GET` | `/backend/api/users/stats.php` | 🔒 Estatísticas completas + metas |
+| `POST` | `/backend/api/users/onboard.php` | 🔒 Submeter onboarding e gerar roadmap |
+| `POST` | `/backend/api/users/update_settings.php` | 🔒 Actualizar perfil ou metas |
+
+### Roadmap e Missões
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/backend/api/users/roadmap.php` | 🔒 Roadmap personalizado |
+| `GET` | `/backend/api/users/mission.php` | 🔒 Missão activa e 3 questões do quiz |
+| `POST` | `/backend/api/users/submit_mission.php` | 🔒 Submeter respostas do quiz |
+
+### Simulados
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/backend/api/users/simulado.php` | 🔒 Gerar exame de 10 questões (gabarito fica na sessão) |
+| `POST` | `/backend/api/users/submit_simulado.php` | 🔒 Corrigir e obter veredicto do Sekulo |
+
+### Ranking
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/backend/api/users/ranking.php` | 🔒 Top 10 semanal e posição do utilizador |
+
+---
+
+## 🎮 Principais Funcionalidades
+
+### 1. Autenticação
+- Registo e login com validação server-side
+- Sessões PHP persistentes
+- Logout no navbar (botão vermelho muted, último elemento)
+
+### 2. Onboarding Personalizado
+- Define universidade alvo, área de estudos, curso específico, horas de estudo diárias e motivação
+- Gera automaticamente um roadmap de 6 módulos via **Gemini AI** ou fallback local
+
+### 3. Roadmap de Estudo
+- Visualização em linha do tempo (timeline)
+- Módulos com estados: `locked`, `available`, `completed`
+- Cada módulo desbloqueado ao passar o quiz correspondente
+
+### 4. Missão Diária (Quiz com o Sekulo)
+- 3 questões por módulo activo
+- Gabarito guardado na sessão PHP (seguro contra trapaça)
+- Feedback personalizado do Sekulo (aprovado/reprovado)
+- +150 XP e desbloqueio do próximo módulo ao passar (≥ 2/3)
+
+### 5. Simulados de Acesso Universitário
+- **10 questões complexas** baseadas na área e universidade alvo do estudante
+- Disciplinas por área:
+  - **Engenharia:** Matemática (4), Física (4), Português (2)
+  - **Saúde:** Biologia (4), Química (4), Física (1), Português (1)
+  - **Sociais/Económicas:** Matemática/Geografia/História (8), Português (2)
+- **Cronómetro de 20 minutos** com alerta vermelho nos últimos 2 min
+- Submissão automática ao esgotar o tempo
+- Gabarito 100% no servidor (sessão PHP) — nunca exposto ao cliente
+- **Veredicto ácido e personalizado do Sekulo** com 5 níveis de severidade
+- Revisão detalhada questão a questão após submissão
+- +500 XP se aprovado (≥ 70%)
+
+### 6. Perfil e Estatísticas
+- XP total, liga, sequência activa, dias de atraso
+- Taxa de acerto geral, módulos completados, simulados realizados
+- Probabilidade de aprovação (baseada no histórico)
+
+### 7. Ranking Competitivo
+- Ranking semanal por XP
+- Posição do utilizador + vizinhos acima e abaixo
+- Ligas: Bronze → Prata → Ouro
+
+### 8. Configurações
+- Alterar nome de exibição e senha
+- Actualizar metas académicas e regenerar roadmap
+
+---
+
+## 📦 Instalação e Configuração
+
+### Pré-requisitos
+- **XAMPP** (Apache + PHP 8.x + MySQL 8.x) instalado
+- Navegador moderno (Chrome, Edge, Firefox)
+- *(Opcional)* Chave de API do [Google Gemini](https://aistudio.google.com/apikey) para funcionalidades de IA dinâmicas
+
+### Passo 1 — Colocar o projecto no XAMPP
+```bash
+# Copiar ou clonar o projecto para a pasta htdocs do XAMPP
+# Windows:
+C:\xampp\htdocs\jangoplus\
 ```
-iuqxhcgmywbrpcnflrbc
+
+### Passo 2 — Criar a base de dados
+```sql
+-- No phpMyAdmin ou MySQL CLI:
+CREATE DATABASE jangoplus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE jangoplus;
+-- Importar o ficheiro:
+SOURCE C:/xampp/htdocs/jangoplus/database.sql;
+```
+
+Ou importar directamente via **phpMyAdmin → Import → database.sql**.
+
+### Passo 3 — Configurar as variáveis de ambiente
+
+Copiar `.env.example` para `.env` e preencher:
+
+```env
+# Base de Dados
+DB_HOST=localhost
+DB_NAME=jangoplus
+DB_USER=root
+DB_PASS=
+
+# Gemini AI (opcional — a plataforma funciona sem esta chave)
+GEMINI_API_KEY=sua_chave_aqui
+```
+
+### Passo 4 — Iniciar o XAMPP
+- Abrir o **XAMPP Control Panel**
+- Iniciar **Apache** e **MySQL**
+
+### Passo 5 — Abrir no navegador
+```
+http://localhost/jangoplus/
 ```
 
 ---
 
-## 📜 Scripts Disponíveis
+## ⚙️ Variáveis de Ambiente
 
-| Script | Comando | Descrição |
-|--------|---------|-----------|
-| **dev** | `npm run dev` | Inicia servidor de desenvolvimento (hot reload) |
-| **build** | `npm run build` | Build para produção |
-| **build:dev** | `npm run build:dev` | Build em modo desenvolvimento (com source maps) |
-| **preview** | `npm run preview` | Preview da build de produção |
-| **lint** | `npm run lint` | Verifica erros de sintaxe/estilo |
-| **format** | `npm run format` | Formata código com Prettier |
+| Variável | Obrigatória | Descrição |
+|---|---|---|
+| `DB_HOST` | ✅ | Host da base de dados (normalmente `localhost`) |
+| `DB_NAME` | ✅ | Nome da base de dados (`jangoplus`) |
+| `DB_USER` | ✅ | Utilizador MySQL (`root` no XAMPP) |
+| `DB_PASS` | ✅ | Password MySQL (vazia no XAMPP por defeito) |
+| `GEMINI_API_KEY` | ❌ | Chave Google AI Studio para roadmaps e veredictos dinâmicos |
 
-### Exemplos de Uso
-```bash
-# Desenvolver localmente
-bun run dev
-
-# Fazer lint antes de push
-npm run lint
-
-# Formatar tudo
-npm run format
-
-# Preparar para produção
-npm run build
-npm run preview
-```
+> **Sem `GEMINI_API_KEY`:** A plataforma usa fallbacks determinísticos locais. Todas as funcionalidades continuam a funcionar — roadmaps e veredictos são gerados com bancos de conteúdo pré-definidos de alta qualidade.
 
 ---
 
-## 🔧 Configurações Importantes
+## 🎨 Design System
 
-### TypeScript (`tsconfig.json`)
-- **Target:** ES2022
-- **Module:** ESNext
-- **JSX:** react-jsx
-- **Strict:** true (tipagem rigorosa)
-- **Paths:** `@/*` → `./src/*`
+| Elemento | Valor |
+|---|---|
+| **Modo** | Dark mode (por defeito, classe `dark` no `<html>`) |
+| **Tipografia** | Segoe UI (sistema Windows), sem dependências externas |
+| **Paleta** | OKLCH — contraste alto, dark premium |
+| **Framework CSS** | Tailwind CSS (CDN, v3 config) |
+| **Cor primária** | `oklch(0.97 0.005 80)` — branco quente |
+| **Cor de fundo** | `oklch(0.14 0.005 60)` — quase preto |
+| **Cor destrutiva** | `oklch(0.58 0.22 25)` — vermelho muted |
+| **Cor de sucesso** | `oklch(0.68 0.15 145)` — verde suave |
 
-### Vite (`vite.config.ts`)
-- Pré-configurado via `@lovable.dev/vite-tanstack-config`
-- **Não adicionar manualmente:** tanstackStart, viteReact, tailwindcss, etc.
-- Tailwind CSS 4 integrado
-- Cloudflare plugin para build
-
-### Tailwind CSS
-- **Versão:** 4.2.1 (última)
-- **Config:** Integrada via Lovable config
-- **Plugins:** tw-animate-css para animações
-
-### ESLint + Prettier
-- TypeScript strict
-- React Hooks verificados
-- Prettier como formatter
-- Config em `eslint.config.js`
-
----
-
-## 🌍 Deployment
-
-### Para Cloudflare Workers (Recomendado)
-```bash
-# 1. Fazer build
-npm run build
-
-# 2. Deploy (requer credenciais Cloudflare)
-wrangler deploy
-```
-
-### Para Vercel / Netlify
-```bash
-# O projeto suporta SSR via TanStack Start
-# Basta conectar o repo e fazer deploy
-```
-
-### Para Docker
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package.json bun.lockb ./
-RUN npm install
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "run", "preview"]
-```
-
----
-
-## ✅ Pré-requisitos antes de Executar
-
-Antes de rodar o projeto, certifique-se de:
-
-- [ ] Node.js 18+ instalado (`node --version`)
-- [ ] Bun instalado (`bun --version`) - opcional mas recomendado
-- [ ] Git instalado
-- [ ] Supabase projeto criado
-- [ ] `.env.local` configurado com credenciais
-- [ ] Acesso internet para instalar dependências
-
-### Quick Checklist
-```bash
-# Verificar ambiente
-node --version          # v18.0.0 ou superior
-npm --version           # v9.0.0 ou superior
-bun --version          # 1.0.0 ou superior (opcional)
-
-# Verificar Git
-git --version
-
-# Testar conectividade
-ping supabase.co
-```
-
----
-
-## 🚦 Passos Finais para Testar Localmente
-
-### 1. Preparação Inicial
-```bash
-cd c:\Users\kinam\Desktop\jangoplus
-bun install          # ou npm install
-```
-
-### 2. Configuração do Ambiente
-```bash
-# Criar .env.local
-echo VITE_SUPABASE_URL=https://iuqxhcgmywbrpcnflrbc.supabase.co >> .env.local
-echo VITE_SUPABASE_ANON_KEY=your_key_here >> .env.local
-```
-
-### 3. Iniciar o Servidor
-```bash
-bun run dev
-```
-
-### 4. Abrir no Navegador
-```
-http://localhost:5173
-```
-
-### 5. Testes
-- ✅ Tentar fazer login
-- ✅ Criar conta nova
-- ✅ Navegar pelas rotas
-- ✅ Verificar console do navegador (F12) para erros
+### Responsividade
+- **Mobile (`< 768px`):** Navegação na barra inferior, layout em coluna única
+- **Desktop (`≥ 768px`):** Sidebar fixa à esquerda (256px), conteúdo em grelha de 12 colunas
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Problema: `VITE_SUPABASE_URL undefined`
-**Solução:** Verificar `.env.local` está na raiz e valores começam com `VITE_`
+### Página em branco ou erros de sessão
 ```bash
-cat .env.local
+# Verificar se o Apache e MySQL estão activos no XAMPP
+# Verificar se o ficheiro .env existe e tem os valores correctos
 ```
 
-### Problema: Porta 5173 já em uso
-**Solução:**
+### Erro de conexão à base de dados
 ```bash
-# Matar processo na porta 5173
-netstat -ano | findstr :5173
-taskkill /PID <PID> /F
-
-# Ou usar porta diferente
-npm run dev -- --port 3000
+# Testar acesso: http://localhost/phpmyadmin
+# Verificar credenciais em backend/config/database.php
 ```
 
-### Problema: Módulos não encontrados
-**Solução:**
+### Roadmap não gera / Simulado sem questões
+- Se a `GEMINI_API_KEY` estiver inválida, o sistema usa o fallback local automaticamente
+- Verificar que o onboarding foi concluído (universidade + área + curso preenchidos)
+
+### Sessão expira rapidamente
+- Verificar `session.gc_maxlifetime` no `php.ini` do XAMPP
+- Valor recomendado: `7200` (2 horas)
+
+### Apache não inicia (porta 80 ocupada)
 ```bash
-# Limpar cache e reinstalar
-rm -r node_modules
-rm bun.lockb
-bun install
-```
-
-### Problema: Erro de tipos TypeScript
-**Solução:**
-```bash
-# Gerar tipos do Supabase
-bun run generate-types  # se script existir
-```
-
-### Problema: `routeTree.gen.ts` desatualizado
-**Solução:** Será regenerado automaticamente ao fazer `npm run dev`
-
-### Problema: Compilação falha
-**Solução:**
-```bash
-# Verificar sintaxe
-npm run lint
-
-# Formatar código
-npm run format
-
-# Fazer rebuild
-rm -r dist
-npm run build
+# Alterar a porta do Apache no XAMPP para 8080
+# E aceder via: http://localhost:8080/jangoplus/
 ```
 
 ---
 
-## 📚 Recursos Úteis
+## 📝 Notas de Desenvolvimento
 
-### Documentação das Tecnologias
-- [React 19 Docs](https://react.dev)
-- [TanStack Router](https://tanstack.com/router/latest)
-- [TanStack React Query](https://tanstack.com/query/latest)
-- [TanStack Start](https://tanstack.com/start/latest)
-- [Supabase Docs](https://supabase.com/docs)
-- [Vite](https://vitejs.dev)
-- [TypeScript](https://www.typescriptlang.org/docs)
-- [Tailwind CSS](https://tailwindcss.com/docs)
-- [Radix UI](https://www.radix-ui.com/docs/primitives/overview/introduction)
+### Adicionar novas questões ao banco local
+Editar `backend/api/users/simulado.php`, função `generateDeterministicSimulado()`. As questões são organizadas por `$courseCategory` com o seguinte formato:
 
-### Cheat Sheets Úteis
-- [Zod Validation](https://zod.dev)
-- [React Hook Form](https://react-hook-form.com)
-- [date-fns Functions](https://date-fns.org/docs/Getting-Started)
-
----
-
-## 📝 Notas Importantes
-
-### Configuração do Exame
-A data do exame é configurada em `src/lib/sekulo-config.ts`:
-```typescript
-export const EXAM_DATE = new Date("2026-11-30T00:00:00");
+```php
+[
+  'subject' => 'Matemática',
+  'text' => 'Enunciado da questão...',
+  'options' => ['A) Opção A', 'B) Opção B', 'C) Opção C', 'D) Opção D'],
+  'correct_answer' => 'B'
+]
 ```
-**Modificar conforme necessário.**
 
-### Disciplinas Suportadas
-- BIO - Biologia
-- QUI - Química
-- FIS - Física
-- LP - Língua Portuguesa
-- MAT - Matemática
-- REV - Revisão
+### Personalizar o tom do Sekulo
+Os veredictos determinísticos estão em `backend/api/users/submit_simulado.php`, função `getDeterministicVerdict()`. Os veredictos Gemini são controlados pelo prompt em `getGeminiVerdict()`.
 
-### Ambiente de Produção
-- Deploy via Cloudflare Workers
-- BD: Supabase gerido
-- CDN: Edge computing global
+### Data do exame
+Configurável directamente no `dashboard.html` via o campo `exam_date` no onboarding. O número de dias restantes é calculado dinamicamente em `app.js`.
 
 ---
 
-## 🎯 Próximos Passos Recomendados
+## 🔐 Segurança
 
-1. **Instalar dependências:** `bun install`
-2. **Configurar `.env.local`** com credenciais Supabase
-3. **Executar localmente:** `bun run dev`
-4. **Testar fluxo de autenticação**
-5. **Explorar rotas** e funcionalidades
-6. **Verificar console do navegador** para warnings
-7. **Fazer lint:** `npm run lint`
-8. **Preparar build:** `npm run build`
+| Medida | Implementação |
+|---|---|
+| Passwords | `password_hash()` + `password_verify()` (bcrypt) |
+| SQL Injection | PDO com prepared statements em todas as queries |
+| Anti-trapaça | Gabarito dos quizzes e simulados guardado na sessão PHP (nunca enviado ao cliente) |
+| Sessões | `session_start()` + verificação de `$_SESSION['user_id']` em todas as rotas protegidas |
 
 ---
 
-## 📞 Suporte
+## 🚀 Roadmap do Projecto
 
-Para dúvidas ou problemas:
-- Verificar este documento
-- Consultar documentação das tecnologias
-- Verificar logs do console do navegador (F12)
-- Verificar terminal de desenvolvimento
+- [x] Autenticação (Login / Registo)
+- [x] Onboarding com geração de Roadmap (Gemini + Fallback)
+- [x] Quiz diário com o Sekulo
+- [x] Sistema de XP, ligas e ranking
+- [x] Layout responsivo (Sidebar PC / Bottom nav Mobile)
+- [x] Simulados de Acesso Universitário (10 questões + timer + veredicto)
+- [x] Tipografia nativa (Segoe UI)
+- [x] Botão de Sair unificado no navbar
+- [ ] Notificações push / lembretes de missão
+- [ ] Exportação de relatório de progresso (PDF)
+- [ ] Modo offline com Service Worker
 
 ---
 
-**Documento gerado automaticamente em 11 de Maio de 2026**  
-**Projeto: Jango+ — Sekulo | Versão: 1.0.0**
-
-"# jangoplus" 
+**Jango+ Sekulo** — *Disciplina, Missão e Consequência.*

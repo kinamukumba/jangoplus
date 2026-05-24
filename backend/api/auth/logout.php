@@ -1,8 +1,5 @@
 <?php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Credentials: true');
-
-session_start();
+require_once '../../config/cors.php';
 
 // Destrói todas as variáveis de sessão
 $_SESSION = array();

@@ -131,7 +131,7 @@ function populateDashboard(user) {
     const missionProgressBar = document.getElementById('mission-progress-bar');
 
     if (missionList) {
-        fetch('../backend/api/users/mission.php')
+        fetch('https://api.plucianoadvogados.com/backend/api/users/mission.php')
             .then(res => res.json())
             .then(data => {
                 if (data.success) {

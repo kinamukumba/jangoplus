@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Note: auth.js is imported in /index.html
         const endpoint = mode === 'signin' 
-            ? 'backend/api/auth/login.php' 
-            : 'backend/api/auth/register.php';
+            ? 'https://api.plucianoadvogados.com/backend/api/auth/login.php' 
+            : 'https://api.plucianoadvogados.com/backend/api/auth/register.php';
 
         try {
             const response = await fetch(endpoint, {

@@ -186,7 +186,7 @@ async function loadRoadmap() {
     if (!roadmapList) return; // Apenas se estivermos na roadmap.html
 
     try {
-        const response = await fetch('../backend/api/users/roadmap.php');
+        const response = await fetch('https://api.plucianoadvogados.com/backend/api/users/roadmap.php');
         const data = await response.json();
 
         if (data.success && data.roadmap && data.roadmap.length > 0) {
@@ -243,7 +243,7 @@ async function loadRoadmap() {
 
 async function loadStatsAndGoals() {
     try {
-        const response = await fetch('../backend/api/users/stats.php');
+        const response = await fetch('https://api.plucianoadvogados.com/backend/api/users/stats.php');
         const data = await response.json();
         if (data.success) {
             const stats = data.stats;
@@ -291,7 +291,7 @@ async function loadMissionQuiz() {
     if (!missionContainer) return; // Apenas se estivermos na sekulo.html
 
     try {
-        const response = await fetch('../backend/api/users/mission.php');
+        const response = await fetch('https://api.plucianoadvogados.com/backend/api/users/mission.php');
         const data = await response.json();
 
         if (data.success) {
@@ -417,7 +417,7 @@ async function submitQuizAnswers() {
     btnSubmit.textContent = 'Sekulo está a corrigir...';
 
     try {
-        const response = await fetch('../backend/api/users/submit_mission.php', {
+        const response = await fetch('https://api.plucianoadvogados.com/backend/api/users/submit_mission.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ answers })
@@ -540,7 +540,7 @@ function setupSettingsForms() {
             successEl.classList.add('hidden');
 
             try {
-                const response = await fetch('../backend/api/users/update_settings.php', {
+                const response = await fetch('https://api.plucianoadvogados.com/backend/api/users/update_settings.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'profile', display_name: displayName, password })
@@ -580,7 +580,7 @@ function setupSettingsForms() {
             successEl.classList.add('hidden');
 
             try {
-                const response = await fetch('../backend/api/users/update_settings.php', {
+                const response = await fetch('https://api.plucianoadvogados.com/backend/api/users/update_settings.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -618,7 +618,7 @@ async function loadSimulado() {
     if (!container) return; // Apenas na simulado.html
 
     try {
-        const response = await fetch('../backend/api/users/simulado.php');
+        const response = await fetch('https://api.plucianoadvogados.com/backend/api/users/simulado.php');
         const data = await response.json();
 
         if (data.success) {
@@ -802,7 +802,7 @@ async function submitSimuladoAnswers(isTimeout = false) {
     }
 
     try {
-        const response = await fetch('../backend/api/users/submit_simulado.php', {
+        const response = await fetch('https://api.plucianoadvogados.com/backend/api/users/submit_simulado.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ answers })

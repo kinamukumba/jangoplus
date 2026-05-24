@@ -1,7 +1,5 @@
--- Jango+ Sekulo: MySQL Database Schema
+-- Jango+ Sekulo: MySQL Database Schema v2.0
 
-CREATE DATABASE IF NOT EXISTS jangoplus_sekulo;
-USE jangoplus_sekulo;
 
 -- Usuários
 CREATE TABLE IF NOT EXISTS users (
@@ -49,11 +47,14 @@ CREATE TABLE IF NOT EXISTS daily_missions (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Simulados / Exames
+-- Simulados / Exames (com métricas de erros por disciplina)
 CREATE TABLE IF NOT EXISTS exam_attempts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     score_percentage DECIMAL(5,2) NOT NULL,
+    correct_count TINYINT DEFAULT 0,
+    total_questions TINYINT DEFAULT 10,
+    weak_subjects JSON NULL,           -- ex: ["Física","Química"]
     completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -73,8 +74,8 @@ DELIMITER ;
 CREATE TABLE IF NOT EXISTS user_onboarding (
     user_id INT PRIMARY KEY,
     university VARCHAR(150) NOT NULL,
-    course_category VARCHAR(100) NOT NULL, -- e.g., 'Engenharia', 'Saude', 'Sociais', 'Economicas'
-    specific_course VARCHAR(150) NOT NULL,  -- e.g., 'Engenharia Informática', 'Medicina'
+    course_category VARCHAR(100) NOT NULL,
+    specific_course VARCHAR(150) NOT NULL,
     study_hours_day DECIMAL(3,1) DEFAULT 2.0,
     motivation TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -85,12 +86,44 @@ CREATE TABLE IF NOT EXISTS user_onboarding (
 CREATE TABLE IF NOT EXISTS user_roadmap (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    subject VARCHAR(100) NOT NULL,      -- e.g. 'Matemática', 'Física'
-    topic VARCHAR(150) NOT NULL,        -- e.g. 'Cinemática Vetorial'
-    description TEXT,                   -- Breve descrição da IA sobre o que focar
-    order_num INT NOT NULL,             -- Ordem sequencial
+    subject VARCHAR(100) NOT NULL,
+    topic VARCHAR(150) NOT NULL,
+    description TEXT,
+    order_num INT NOT NULL,
     status ENUM('locked', 'available', 'completed') DEFAULT 'locked',
+    is_review TINYINT(1) DEFAULT 0,    -- 1 = nó criado por erros do simulado
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- ─────────────────────────────────────────────
+-- NOVAS TABELAS v2.0
+-- ─────────────────────────────────────────────
+
+-- Sessões diárias (DAU/MAU, tempo médio de estudo)
+CREATE TABLE IF NOT EXISTS user_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    session_date DATE NOT NULL,
+    duration_minutes INT DEFAULT 1,
+    UNIQUE KEY uq_user_session_date (user_id, session_date),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Resultados do Quiz Diagnóstico (pré-geração de roadmap)
+CREATE TABLE IF NOT EXISTS diagnostic_results (
+    user_id INT PRIMARY KEY,
+    weak_subjects JSON NOT NULL,       -- ["Física", "Química"]
+    strong_subjects JSON NOT NULL,     -- ["Matemática", "Português"]
+    raw_scores JSON NOT NULL,          -- {"Matemática": 80, "Física": 40}
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- ─────────────────────────────────────────────
+-- Migrações para BDs já existentes (v1 → v2)
+-- ─────────────────────────────────────────────
+-- ALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS correct_count TINYINT DEFAULT 0;
+-- ALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS total_questions TINYINT DEFAULT 10;
+-- ALTER TABLE exam_attempts ADD COLUMN IF NOT EXISTS weak_subjects JSON NULL;
+-- ALTER TABLE user_roadmap ADD COLUMN IF NOT EXISTS is_review TINYINT(1) DEFAULT 0;

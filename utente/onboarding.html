@@ -37,7 +37,7 @@
             <div class="uppercase-tight text-[10px] text-muted-foreground tracking-widest">JANGO+</div>
             <div class="font-display text-base font-bold tracking-tight">SEKULO ONBOARDING</div>
         </div>
-        <div id="step-indicator" class="text-xs text-muted-foreground font-mono">Passo 1 de 2</div>
+        <div id="step-indicator" class="text-xs text-muted-foreground font-mono">Passo 1 de 3</div>
     </header>
 
     <main class="flex-grow flex items-center justify-center px-5 py-8">
@@ -45,7 +45,7 @@
             
             <!-- Progress Bar inside Card -->
             <div class="absolute top-0 left-0 w-full h-[3px] bg-muted">
-                <div id="bar-progress" class="h-full bg-primary w-1/2 transition-all duration-300"></div>
+                <div id="bar-progress" class="h-full bg-primary w-1/3 transition-all duration-300"></div>
             </div>
 
             <!-- STEP 1: Personal Profile -->
@@ -131,13 +131,44 @@
                     <button id="btn-back-to-step1" class="w-1/3 h-12 uppercase-tight text-xs border border-border text-muted-foreground hover:text-foreground rounded-md transition-colors">
                         Voltar
                     </button>
-                    <button id="btn-submit" class="w-2/3 h-12 btn-primary uppercase-tight text-xs">
-                        Gerar o meu Roadmap
+                    <button id="btn-to-step3" class="w-2/3 h-12 btn-primary uppercase-tight text-xs">
+                        Ir para Diagnóstico
                     </button>
                 </div>
             </div>
 
-            <!-- STEP 3: Loading / AI Generation -->
+            <!-- STEP 3: Quiz Diagnóstico -->
+            <div id="step-3" class="step-transition hidden space-y-5">
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                        <h2 class="font-display text-2xl font-bold tracking-tight">Teste Diagnóstico</h2>
+                        <span id="diagnostic-quest-num" class="text-xs text-primary font-mono font-bold">1 / 10</span>
+                    </div>
+                    <p class="text-xs text-muted-foreground">
+                        Responda com atenção. O Sekulo vai medir o seu nível para personalizar o roadmap.
+                    </p>
+                </div>
+
+                <!-- Pergunta Container -->
+                <div class="bg-muted/10 border border-border/80 rounded-lg p-4 space-y-4">
+                    <div class="text-[10px] uppercase text-primary tracking-wider font-semibold" id="diagnostic-subject">Disciplina</div>
+                    <p class="text-sm font-semibold leading-relaxed text-foreground" id="diagnostic-question-text">Questão...</p>
+                    <div class="grid grid-cols-1 gap-2" id="diagnostic-options">
+                        <!-- Options buttons will be rendered dynamically here -->
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button id="btn-back-to-step2" class="w-1/3 h-12 uppercase-tight text-xs border border-border text-muted-foreground hover:text-foreground rounded-md transition-colors">
+                        Voltar
+                    </button>
+                    <button id="btn-next-question" class="w-2/3 h-12 btn-primary uppercase-tight text-xs opacity-50 cursor-not-allowed" disabled>
+                        Próxima Pergunta
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP LOADING: Loading / AI Generation -->
             <div id="step-loading" class="step-transition hidden space-y-6 flex flex-col items-center justify-center text-center py-8">
                 <!-- Circular Pulsing Avatar -->
                 <div class="h-24 w-24 rounded-full bg-sekulo flex items-center justify-center font-display font-black text-4xl text-sekulo-foreground shadow-[0_0_30px_rgba(255,255,255,0.08)] animate-pulse relative">
@@ -175,11 +206,14 @@
             // Elements
             const step1 = document.getElementById('step-1');
             const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
             const stepLoading = document.getElementById('step-loading');
             
             const btnToStep2 = document.getElementById('btn-to-step2');
             const btnBackToStep1 = document.getElementById('btn-back-to-step1');
-            const btnSubmit = document.getElementById('btn-submit');
+            const btnToStep3 = document.getElementById('btn-to-step3');
+            const btnBackToStep2 = document.getElementById('btn-back-to-step2');
+            const btnNextQuestion = document.getElementById('btn-next-question');
             
             const studyHoursRange = document.getElementById('study-hours');
             const hoursVal = document.getElementById('hours-val');
@@ -189,6 +223,9 @@
             const errorBox = document.getElementById('error-box');
             
             let selectedArea = '';
+            let questions = [];
+            let currentQuestionIndex = 0;
+            let userAnswers = {};
 
             // Dynamic hours label
             studyHoursRange.addEventListener('input', (e) => {
@@ -210,7 +247,7 @@
                 });
             });
 
-            // Navigation
+            // Navigation Step 1 -> Step 2
             btnToStep2.addEventListener('click', () => {
                 const motivation = document.getElementById('motivation').value.trim();
                 if (!motivation) {
@@ -221,30 +258,22 @@
                 
                 step1.classList.add('hidden');
                 step2.classList.remove('hidden');
-                barProgress.style.width = '100%';
-                stepIndicator.textContent = 'Passo 2 de 2';
+                barProgress.style.width = '66%';
+                stepIndicator.textContent = 'Passo 2 de 3';
             });
 
+            // Navigation Step 2 -> Step 1
             btnBackToStep1.addEventListener('click', () => {
                 step2.classList.add('hidden');
                 step1.classList.remove('hidden');
-                barProgress.style.width = '50%';
-                stepIndicator.textContent = 'Passo 1 de 2';
+                barProgress.style.width = '33%';
+                stepIndicator.textContent = 'Passo 1 de 3';
                 errorBox.classList.add('hidden');
             });
 
-            function showError(msg) {
-                errorBox.textContent = msg;
-                errorBox.classList.remove('hidden');
-            }
-
-            // Submit Onboarding
-            btnSubmit.addEventListener('click', async () => {
-                const university = document.getElementById('university').value;
+            // Navigation Step 2 -> Step 3 (Diagnostic Quiz)
+            btnToStep3.addEventListener('click', async () => {
                 const specificCourse = document.getElementById('specific-course').value.trim();
-                const studyHours = studyHoursRange.value;
-                const motivation = document.getElementById('motivation').value.trim();
-
                 if (!selectedArea) {
                     showError('Por favor, seleciona uma área de estudos.');
                     return;
@@ -253,11 +282,131 @@
                     showError('Por favor, insere o teu curso de destino.');
                     return;
                 }
+                errorBox.classList.add('hidden');
+
+                // Carregar perguntas de diagnóstico
+                try {
+                    btnToStep3.disabled = true;
+                    btnToStep3.textContent = 'A carregar quiz...';
+                    const response = await fetch(`../backend/api/users/diagnostico.php?category=${selectedArea}`);
+                    const data = await response.json();
+                    
+                    if (data && data.success) {
+                        questions = data.questions;
+                        currentQuestionIndex = 0;
+                        userAnswers = {};
+                        
+                        // Ir para Passo 3
+                        step2.classList.add('hidden');
+                        step3.classList.remove('hidden');
+                        barProgress.style.width = '100%';
+                        stepIndicator.textContent = 'Passo 3 de 3';
+                        
+                        renderDiagnosticQuestion();
+                    } else {
+                        showError('Erro ao carregar o quiz diagnóstico.');
+                    }
+                } catch (err) {
+                    showError('Erro de ligação ao carregar quiz.');
+                    console.error(err);
+                } finally {
+                    btnToStep3.disabled = false;
+                    btnToStep3.textContent = 'Ir para Diagnóstico';
+                }
+            });
+
+            // Navigation Step 3 -> Step 2
+            btnBackToStep2.addEventListener('click', () => {
+                step3.classList.add('hidden');
+                step2.classList.remove('hidden');
+                barProgress.style.width = '66%';
+                stepIndicator.textContent = 'Passo 2 de 3';
+                errorBox.classList.add('hidden');
+            });
+
+            function showError(msg) {
+                errorBox.textContent = msg;
+                errorBox.classList.remove('hidden');
+            }
+
+            function renderDiagnosticQuestion() {
+                if (questions.length === 0) return;
+                const q = questions[currentQuestionIndex];
+                
+                document.getElementById('diagnostic-quest-num').textContent = `${currentQuestionIndex + 1} / ${questions.length}`;
+                document.getElementById('diagnostic-subject').textContent = q.subject;
+                document.getElementById('diagnostic-question-text').textContent = q.text;
+
+                const optionsContainer = document.getElementById('diagnostic-options');
+                optionsContainer.innerHTML = '';
+
+                // Desabilitar o botão de avançar até que uma opção seja selecionada
+                btnNextQuestion.disabled = true;
+                btnNextQuestion.classList.add('opacity-50', 'cursor-not-allowed');
+
+                // Alterar texto do botão de avanço no final
+                if (currentQuestionIndex === questions.length - 1) {
+                    btnNextQuestion.textContent = 'Gerar o meu Roadmap';
+                } else {
+                    btnNextQuestion.textContent = 'Próxima Pergunta';
+                }
+
+                q.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'w-full text-left px-4 py-3 bg-muted/20 border border-border hover:border-primary rounded-lg text-xs font-semibold transition-all duration-200 select-none';
+                    btn.textContent = opt;
+
+                    // Extrair a letra (A, B, C, D) da opção
+                    const optLetter = opt.substring(0, 1).toUpperCase();
+
+                    // Se já respondeu a esta pergunta (caso tenha voltado e avançado)
+                    if (userAnswers[q.id] === optLetter) {
+                        btn.classList.add('border-primary', 'bg-primary/5');
+                        enableNextButton();
+                    }
+
+                    btn.addEventListener('click', () => {
+                        // Limpar seleções anteriores nesta pergunta
+                        Array.from(optionsContainer.children).forEach(c => {
+                            c.classList.remove('border-primary', 'bg-primary/5');
+                        });
+                        // Marcar selecionada
+                        btn.classList.add('border-primary', 'bg-primary/5');
+                        userAnswers[q.id] = optLetter;
+                        enableNextButton();
+                    });
+
+                    optionsContainer.appendChild(btn);
+                });
+            }
+
+            function enableNextButton() {
+                btnNextQuestion.disabled = false;
+                btnNextQuestion.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            btnNextQuestion.addEventListener('click', () => {
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex++;
+                    renderDiagnosticQuestion();
+                } else {
+                    // Quiz concluído, enviar onboarding completo
+                    submitOnboarding();
+                }
+            });
+
+            // Envio final de Onboarding com o quiz diagnóstico
+            async function submitOnboarding() {
+                const university = document.getElementById('university').value;
+                const specificCourse = document.getElementById('specific-course').value.trim();
+                const studyHours = studyHoursRange.value;
+                const motivation = document.getElementById('motivation').value.trim();
 
                 errorBox.classList.add('hidden');
                 
                 // Show Loading
-                step2.classList.add('hidden');
+                step3.classList.add('hidden');
                 stepLoading.classList.remove('hidden');
                 stepIndicator.classList.add('hidden');
                 barProgress.parentElement.classList.add('hidden'); // hide bar
@@ -265,10 +414,10 @@
                 // Animate Loading Messages
                 const messages = [
                     "Sekulo está a analisar a tua rotina...",
-                    "A consultar a base de exames de Angola...",
+                    "A avaliar os resultados do teu teste diagnóstico...",
+                    "A mapear os teus pontos fortes e fracos...",
                     "A desenhar o teu plano de estudos personalizado...",
-                    "A organizar os módulos de Matemática e Física...",
-                    "Quase pronto... Prepare-se para a sua rotina!",
+                    "A priorizar matérias com baixo rendimento...",
                     "Concluído! A tua jornada começa agora."
                 ];
 
@@ -301,7 +450,8 @@
                             course_category: selectedArea,
                             specific_course: specificCourse,
                             study_hours_day: studyHours,
-                            motivation
+                            motivation,
+                            diagnostic_answers: userAnswers
                         })
                     });
 
@@ -322,11 +472,11 @@
                     showErrorFormMode('Erro ao ligar ao servidor local.');
                     console.error(err);
                 }
-            });
+            }
 
             function showErrorFormMode(msg) {
                 stepLoading.classList.add('hidden');
-                step2.classList.remove('hidden');
+                step3.classList.remove('hidden');
                 stepIndicator.classList.remove('hidden');
                 barProgress.parentElement.classList.remove('hidden');
                 showError(msg);

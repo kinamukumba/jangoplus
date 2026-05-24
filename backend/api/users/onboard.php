@@ -29,11 +29,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $specificCourse = $data['specific_course'] ?? '';
     $studyHours = floatval($data['study_hours_day'] ?? 2.0);
     $motivation = $data['motivation'] ?? '';
+    $diagnosticAnswers = $data['diagnostic_answers'] ?? []; // { "1": "A", "2": "C" }
 
     if (empty($university) || empty($courseCategory) || empty($specificCourse)) {
         http_response_code(400);
         echo json_encode(['error' => 'Universidade, área de estudos e curso específico são obrigatórios']);
         exit;
+    }
+
+    // Avaliar o quiz diagnóstico se fornecido
+    $weakSubjects = [];
+    $strongSubjects = [];
+    $rawScores = [];
+
+    if (!empty($diagnosticAnswers) && isset($_SESSION['diagnostic_gabarito'])) {
+        $gabarito = $_SESSION['diagnostic_gabarito'];
+        
+        // Mapeamento de disciplinas por questão dependendo da área
+        $subjectsMap = [];
+        if ($courseCategory === 'Engenharia') {
+            $subjectsMap = [
+                1=>'Matemática', 2=>'Matemática', 3=>'Matemática', 4=>'Matemática',
+                5=>'Física', 6=>'Física', 7=>'Física', 8=>'Física',
+                9=>'Português', 10=>'Português'
+            ];
+        } elseif ($courseCategory === 'Saude') {
+            $subjectsMap = [
+                1=>'Biologia', 2=>'Biologia', 3=>'Biologia', 4=>'Biologia',
+                5=>'Química', 6=>'Química', 7=>'Química', 8=>'Física',
+                9=>'Português', 10=>'Português'
+            ];
+        } elseif ($courseCategory === 'Sociais') {
+            $subjectsMap = [
+                1=>'História', 2=>'História', 3=>'História', 4=>'História',
+                5=>'Geografia', 6=>'Geografia', 7=>'Geografia', 8=>'Geografia',
+                9=>'Português', 10=>'Português'
+            ];
+        } else { // Economicas
+            $subjectsMap = [
+                1=>'Matemática', 2=>'Matemática', 3=>'Matemática', 4=>'Matemática',
+                5=>'Geografia', 6=>'Geografia', 7=>'Geografia', 8=>'Geografia',
+                9=>'Português', 10=>'Português'
+            ];
+        }
+
+        $correctsPerSubject = [];
+        $totalsPerSubject = [];
+
+        foreach ($gabarito as $qId => $correctVal) {
+            $subject = $subjectsMap[$qId] ?? 'Geral';
+            if (!isset($correctsPerSubject[$subject])) {
+                $correctsPerSubject[$subject] = 0;
+                $totalsPerSubject[$subject] = 0;
+            }
+
+            $totalsPerSubject[$subject]++;
+            $userVal = isset($diagnosticAnswers[$qId]) ? trim(strtoupper($diagnosticAnswers[$qId])) : '';
+            if ($userVal === $correctVal) {
+                $correctsPerSubject[$subject]++;
+            }
+        }
+
+        foreach ($totalsPerSubject as $sub => $total) {
+            $pct = ($correctsPerSubject[$sub] / $total) * 100;
+            $rawScores[$sub] = round($pct, 1);
+            if ($pct < 60) {
+                $weakSubjects[] = $sub;
+            } else {
+                $strongSubjects[] = $sub;
+            }
+        }
+    } else {
+        // Fallback genérico se não tiver respondido ao diagnóstico
+        $rawScores = ['Geral' => 100];
+        $strongSubjects = ['Geral'];
+        $weakSubjects = [];
     }
 
     try {
@@ -52,18 +122,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ');
         $stmt->execute([$userId, $university, $courseCategory, $specificCourse, $studyHours, $motivation]);
 
-        // 2. Atualizar users.onboarded_at
+        // 2. Gravar resultados do quiz diagnóstico
+        $stmtDiag = $pdo->prepare('
+            INSERT INTO diagnostic_results (user_id, weak_subjects, strong_subjects, raw_scores)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+                weak_subjects = VALUES(weak_subjects),
+                strong_subjects = VALUES(strong_subjects),
+                raw_scores = VALUES(raw_scores)
+        ');
+        $stmtDiag->execute([
+            $userId,
+            json_encode($weakSubjects, JSON_UNESCAPED_UNICODE),
+            json_encode($strongSubjects, JSON_UNESCAPED_UNICODE),
+            json_encode($rawScores, JSON_UNESCAPED_UNICODE)
+        ]);
+
+        // 3. Atualizar users.onboarded_at
         $stmt = $pdo->prepare('UPDATE users SET onboarded_at = CURRENT_TIMESTAMP WHERE id = ?');
         $stmt->execute([$userId]);
 
-        // 3. Gerar o Roadmap (Gemini API ou Fallback Determinístico)
-        $roadmapNodes = generateRoadmap($university, $courseCategory, $specificCourse, $studyHours, $motivation);
+        // 4. Gerar o Roadmap Personalizado (levando em conta pontos fortes e fracos)
+        $roadmapNodes = generateRoadmap($university, $courseCategory, $specificCourse, $studyHours, $motivation, $weakSubjects, $strongSubjects);
 
-        // 4. Limpar roadmap antigo se houver
+        // 5. Limpar roadmap antigo se houver
         $stmt = $pdo->prepare('DELETE FROM user_roadmap WHERE user_id = ?');
         $stmt->execute([$userId]);
 
-        // 5. Inserir o novo roadmap gerado
+        // 6. Inserir o novo roadmap gerado
         $stmt = $pdo->prepare('
             INSERT INTO user_roadmap (user_id, subject, topic, description, order_num, status)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -85,10 +171,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pdo->commit();
 
+        // Limpar gabarito do diagnóstico da sessão
+        unset($_SESSION['diagnostic_gabarito']);
+        unset($_SESSION['diagnostic_category']);
+
         echo json_encode([
             'success' => true,
-            'message' => 'Onboarding concluído e roadmap gerado com sucesso!',
-            'roadmap_count' => count($roadmapNodes)
+            'message' => 'Onboarding concluído, diagnóstico processado e roadmap gerado com sucesso!',
+            'roadmap_count' => count($roadmapNodes),
+            'weak_subjects' => $weakSubjects,
+            'strong_subjects' => $strongSubjects
         ]);
 
     } catch (Exception $e) {
@@ -103,33 +195,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /**
  * Função para gerar o roadmap usando a API da Gemini ou um Fallback de alta qualidade
  */
-function generateRoadmap($university, $courseCategory, $specificCourse, $studyHours, $motivation) {
+function generateRoadmap($university, $courseCategory, $specificCourse, $studyHours, $motivation, $weakSubjects, $strongSubjects) {
     $apiKey = $_ENV['GEMINI_API_KEY'] ?? $_SERVER['GEMINI_API_KEY'] ?? '';
 
     if (!empty($apiKey)) {
         // Tenta gerar usando a API da Gemini
-        $generated = generateWithGemini($apiKey, $university, $courseCategory, $specificCourse, $studyHours, $motivation);
+        $generated = generateWithGemini($apiKey, $university, $courseCategory, $specificCourse, $studyHours, $motivation, $weakSubjects, $strongSubjects);
         if ($generated !== null) {
             return $generated;
         }
     }
 
     // Se falhar ou não houver chave, usa o gerador local de alta qualidade
-    return generateDeterministicRoadmap($university, $courseCategory, $specificCourse);
+    return generateDeterministicRoadmap($university, $courseCategory, $specificCourse, $weakSubjects);
 }
 
 /**
  * Chama a API da Gemini 2.0 Flash para criar o Roadmap Personalizado em JSON
  */
-function generateWithGemini($apiKey, $university, $courseCategory, $specificCourse, $studyHours, $motivation) {
+function generateWithGemini($apiKey, $university, $courseCategory, $specificCourse, $studyHours, $motivation, $weakSubjects, $strongSubjects) {
     $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $apiKey;
 
+    $weakStr = !empty($weakSubjects) ? implode(', ', $weakSubjects) : 'Nenhuma identificada';
+    $strongStr = !empty($strongSubjects) ? implode(', ', $strongSubjects) : 'Nenhuma identificada';
+
     $prompt = "Você é o 'Sekulo', o mestre severo e altamente focado da plataforma Jango+. Sua missão é gerar um cronograma/roadmap de preparação personalizado de 6 tópicos sequenciais para um estudante angolano que quer passar no exame de acesso da universidade '{$university}', no curso específico de '{$specificCourse}' (área de {$courseCategory}). O estudante estuda {$studyHours} horas por dia. Motivação do estudante: '{$motivation}'.
+
+No teste de diagnóstico recente, os pontos fracos (disciplinas com baixo rendimento) foram: {$weakStr}.
+Os pontos fortes do estudante foram: {$strongStr}.
+IMPORTANTE: Dê prioridade a abordar os pontos fracos nos primeiros tópicos do cronograma, adicionando alertas claros nas descrições de que ele precisa de foco extra nestas áreas.
 
 Retorne rigorosamente apenas um JSON Array com exatamente 6 elementos. Cada elemento do array deve conter as seguintes chaves com valores em português:
 - 'subject': Disciplina (Ex: Matemática, Física, Biologia, Química, História, Geografia, Língua Portuguesa) adaptada aos exames de acesso de Angola para esta área.
 - 'topic': O título curto do tópico de estudo (Ex: Cinemática, Funções Reais, Citologia).
-- 'description': Uma frase de conselho curto e motivador (com o tom focado e exigente do Sekulo) sobre o que exatamente focar ou resolver desse tópico.
+- 'description': Uma frase de conselho curto e motivador (com o tom focado e exigente do Sekulo) sobre o que exatamente focar ou resolver desse tópico, focando nos pontos fracos dele.
 
 Exemplo de formato de resposta esperado:
 [
@@ -181,7 +280,7 @@ Não escreva explicações, introduções ou blocos de código markdown. Retorne
 /**
  * Gerador de salvaguarda (Fallback) premium
  */
-function generateDeterministicRoadmap($university, $courseCategory, $specificCourse) {
+function generateDeterministicRoadmap($university, $courseCategory, $specificCourse, $weakSubjects) {
     $roadmap = [];
 
     switch ($courseCategory) {
@@ -325,6 +424,21 @@ function generateDeterministicRoadmap($university, $courseCategory, $specificCou
                 ]
             ];
             break;
+    }
+
+    // Se o estudante tem pontos fracos, reorganiza o cronograma determinístico colocá-los primeiro
+    if (!empty($weakSubjects)) {
+        $weakNodes = [];
+        $normalNodes = [];
+        foreach ($roadmap as $node) {
+            if (in_array($node['subject'], $weakSubjects)) {
+                $node['description'] = "🚨 PONTO FRACO IDENTIFICADO: " . $node['description'];
+                $weakNodes[] = $node;
+            } else {
+                $normalNodes[] = $node;
+            }
+        }
+        $roadmap = array_merge($weakNodes, $normalNodes);
     }
 
     return $roadmap;

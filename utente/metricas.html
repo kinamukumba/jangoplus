@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Métricas de Desempenho - Jango+ Sekulo</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script src="../assets/js/tailwind-config.js"></script>
+
+    <!-- App Logic -->
+    <script src="../assets/js/app.js" defer></script>
+</head>
+<body class="bg-background text-foreground font-sans min-h-screen pb-20">
+    
+    <div class="min-h-screen bg-background pb-12 md:pl-64">
+        <!-- Header -->
+        <header class="px-5 pt-6 pb-4 md:px-8 md:py-6 flex items-center border-b border-border max-w-md md:max-w-5xl mx-auto">
+            <div>
+                <div class="uppercase-tight text-[10px] text-muted-foreground">DESEMPENHO ACADÉMICO</div>
+                <div class="font-display text-base font-bold">MÉTRICAS DO SEKULO</div>
+            </div>
+        </header>
+
+        <main class="px-5 pt-6 pb-12 md:px-8 md:py-8 space-y-6 max-w-md md:max-w-5xl mx-auto">
+            
+            <!-- ALERTA DE RISCO (BLOCO 4) -->
+            <section id="alerts-container" class="space-y-3 hidden">
+                <div class="uppercase-tight text-[10px] text-destructive font-bold tracking-wider">Avisos do Sekulo</div>
+                <div id="alerts-list" class="space-y-2">
+                    <!-- Dynamic Alert Cards -->
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- BLOCO 1: CORE METRICS -->
+                <section class="bg-card border border-border rounded-xl p-5 md:p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-border/60 pb-2">
+                        <h2 class="font-display text-sm font-bold uppercase tracking-wider text-muted-foreground">Bloco 1: Core Metrics</h2>
+                        <span class="text-xs text-primary font-mono font-semibold">North Star</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                            <div class="text-[10px] uppercase text-muted-foreground">Frequência Mensal (DAU/MAU)</div>
+                            <div id="core-dau-mau" class="font-display text-2xl font-bold mt-1 text-foreground">...</div>
+                            <div class="text-[9px] text-muted-foreground mt-1">Razão de dias ativos nos últimos 30 dias</div>
+                        </div>
+                        <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                            <div class="text-[10px] uppercase text-muted-foreground">Status de Retenção (D7)</div>
+                            <div id="core-retention" class="font-display text-lg font-bold mt-2">...</div>
+                            <div class="text-[9px] text-muted-foreground mt-1">Consistência de estudo nos últimos 7 dias</div>
+                        </div>
+                        <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                            <div class="text-[10px] uppercase text-muted-foreground">Dias Ativos (30D)</div>
+                            <div id="core-active-30" class="font-display text-2xl font-bold mt-1">...</div>
+                            <div class="text-[9px] text-muted-foreground mt-1">Foco de estudo continuado</div>
+                        </div>
+                        <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                            <div class="text-[10px] uppercase text-muted-foreground">Risco de Churn</div>
+                            <div id="core-churn" class="font-display text-lg font-bold mt-2">...</div>
+                            <div class="text-[9px] text-muted-foreground mt-1">Risco de desistência dos exames</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- BLOCO 2: ENGAJAMENTO -->
+                <section class="bg-card border border-border rounded-xl p-5 md:p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-border/60 pb-2">
+                        <h2 class="font-display text-sm font-bold uppercase tracking-wider text-muted-foreground">Bloco 2: Engajamento</h2>
+                        <span class="text-xs text-success font-mono font-semibold">Streak Ativa</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                            <div class="text-[10px] uppercase text-muted-foreground">Sequência Atual</div>
+                            <div id="eng-streak" class="font-display text-2xl font-bold mt-1 text-success">...</div>
+                            <div class="text-[9px] text-muted-foreground mt-1">Dias consecutivos estudados</div>
+                        </div>
+                        <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                            <div class="text-[10px] uppercase text-muted-foreground">Missões / Dia</div>
+                            <div id="eng-missions" class="font-display text-2xl font-bold mt-1">...</div>
+                            <div class="text-[9px] text-muted-foreground mt-1">Média de missões diárias concluídas</div>
+                        </div>
+                        <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                            <div class="text-[10px] uppercase text-muted-foreground">Tempo Médio Diário</div>
+                            <div id="eng-time" class="font-display text-2xl font-bold mt-1">... min</div>
+                            <div class="text-[9px] text-muted-foreground mt-1">Tempo ativo de estudo por sessão</div>
+                        </div>
+                        <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                            <div class="text-[10px] uppercase text-muted-foreground">Frequência Semanal</div>
+                            <div id="eng-weekly" class="font-display text-2xl font-bold mt-1">... / 7 dias</div>
+                            <div class="text-[9px] text-muted-foreground mt-1">Dias de atividade na última semana</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- BLOCO 3: APRENDIZADO -->
+            <section class="bg-card border border-border rounded-xl p-5 md:p-6 space-y-6">
+                <div class="flex items-center justify-between border-b border-border/60 pb-2">
+                    <h2 class="font-display text-sm font-bold uppercase tracking-wider text-muted-foreground">Bloco 3: Desempenho e Aprendizado</h2>
+                    <span class="text-xs text-warning font-mono font-semibold">Taxa de Acerto Global: <span id="learn-accuracy">...%</span></span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <!-- Evolução de Simulados (Gráfico SVG) -->
+                    <div class="md:col-span-8 space-y-2">
+                        <div class="text-xs font-semibold text-muted-foreground uppercase">Histórico de Simulados (Evolução %)</div>
+                        <div class="bg-muted/20 border border-border/35 rounded-lg p-4 h-48 flex items-center justify-center relative">
+                            <!-- SVG Chart dynamic elements inside JS -->
+                            <svg id="evolution-chart" class="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">
+                                <path id="chart-path" d="" fill="none" stroke="hsl(var(--primary))" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                <g id="chart-dots"></g>
+                            </svg>
+                            <div id="chart-fallback" class="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground hidden">
+                                Sem simulados suficientes realizados
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disciplinas Fracas -->
+                    <div class="md:col-span-4 space-y-4">
+                        <div>
+                            <div class="text-xs font-semibold text-muted-foreground uppercase mb-2">Pontos Críticos (Mais Erros)</div>
+                            <ul id="learn-weak-list" class="space-y-2">
+                                <!-- Dynamic List -->
+                                <li class="text-xs text-muted-foreground italic">Nenhum ponto fraco identificado ainda</li>
+                            </ul>
+                        </div>
+
+                        <div class="pt-2 border-t border-border/50">
+                            <a href="simulado.html" class="block w-full py-2 bg-primary text-primary-foreground text-center font-display font-bold text-xs uppercase tracking-wider rounded hover:opacity-90 transition-opacity">
+                                Fazer Novo Simulado
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Navigation Sidebar / Bottom Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 md:top-0 md:bottom-auto md:right-auto md:w-64 md:h-screen bg-card border-t md:border-t-0 md:border-r border-border z-50 transition-all duration-300">
+        <div class="max-w-md md:max-w-none mx-auto md:mx-0 flex md:flex-col items-center justify-around md:justify-start md:items-stretch h-16 md:h-full px-4 md:px-6 md:py-8 text-xs font-medium text-muted-foreground gap-5">
+            <!-- Logo inside sidebar (hidden on mobile, visible on desktop) -->
+            <div class="hidden md:flex flex-col mb-8 border-b border-border pb-4">
+                <span class="uppercase-tight text-[10px] text-muted-foreground">JANGO+</span>
+                <span class="font-display text-lg font-bold text-foreground">SEKULO</span>
+            </div>
+            
+            <a href="dashboard.html" class="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 transition-colors hover:text-foreground md:py-3 md:px-4 md:rounded-lg md:hover:bg-muted/30">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span class="md:text-sm md:font-semibold">Home</span>
+            </a>
+            <a href="roadmap.html" class="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 transition-colors hover:text-foreground md:py-3 md:px-4 md:rounded-lg md:hover:bg-muted/30">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span class="md:text-sm md:font-semibold">Roadmap</span>
+            </a>
+            <a href="sekulo.html" class="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 transition-colors hover:text-foreground md:py-3 md:px-4 md:rounded-lg md:hover:bg-muted/30">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <span class="md:text-sm md:font-semibold">Missão</span>
+            </a>
+            <a href="metricas.html" class="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 text-foreground transition-colors hover:text-foreground md:py-3 md:px-4 md:rounded-lg md:bg-muted/30">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span class="md:text-sm md:font-semibold">Métricas</span>
+            </a>
+            <a href="perfil.html" class="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 transition-colors hover:text-foreground md:py-3 md:px-4 md:rounded-lg md:hover:bg-muted/30">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span class="md:text-sm md:font-semibold">Perfil</span>
+            </a>
+
+            <!-- Botão Sair -->
+            <button id="logout-btn" class="md:mt-auto flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-3 md:py-3 md:px-4 md:rounded-lg transition-colors text-destructive/60 hover:text-destructive hover:bg-destructive/10 md:border-t md:border-border md:pt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <span class="md:text-sm md:font-semibold">Sair</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Script to load the metrics directly -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('../backend/api/users/metricas.php')
+                .then(res => {
+                    if (res.status === 401) {
+                        window.location.href = '../index.html';
+                        return;
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        renderMetrics(data);
+                    }
+                })
+                .catch(err => console.error("Erro ao obter métricas:", err));
+        });
+
+        function renderMetrics(data) {
+            // Bloco 1: Core Metrics
+            const activeDays = data.core.active_days_30;
+            const dauMauRatio = (activeDays / 30 * 100).toFixed(0);
+            document.getElementById('core-active-30').innerText = activeDays;
+            document.getElementById('core-dau-mau').innerText = `${dauMauRatio}%`;
+            
+            const retentionEl = document.getElementById('core-retention');
+            if (data.core.retention_d7 === 'activo') {
+                retentionEl.innerText = 'Excelente';
+                retentionEl.className = 'font-display text-lg font-bold mt-2 text-success';
+            } else if (data.core.retention_d7 === 'em_risco') {
+                retentionEl.innerText = 'Irregular';
+                retentionEl.className = 'font-display text-lg font-bold mt-2 text-warning';
+            } else {
+                retentionEl.innerText = 'Desconectado';
+                retentionEl.className = 'font-display text-lg font-bold mt-2 text-destructive';
+            }
+
+            const churnEl = document.getElementById('core-churn');
+            if (data.core.churn) {
+                churnEl.innerText = 'Risco Alto';
+                churnEl.className = 'font-display text-lg font-bold mt-2 text-destructive';
+            } else {
+                churnEl.innerText = 'Risco Baixo';
+                churnEl.className = 'font-display text-lg font-bold mt-2 text-success';
+            }
+
+            // Bloco 2: Engagement
+            document.getElementById('eng-streak').innerText = `${data.engagement.streak} dias`;
+            document.getElementById('eng-missions').innerText = `${data.engagement.missions_per_day}`;
+            document.getElementById('eng-time').innerText = `${data.engagement.avg_daily_minutes} min`;
+            document.getElementById('eng-weekly').innerText = `${data.engagement.weekly_frequency} / 7 dias`;
+
+            // Bloco 3: Learning Progress
+            document.getElementById('learn-accuracy').innerText = `${data.learning.global_accuracy}%`;
+            
+            const weakList = document.getElementById('learn-weak-list');
+            weakList.innerHTML = '';
+            if (data.learning.weak_disciplines.length > 0) {
+                data.learning.weak_disciplines.forEach(sub => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center gap-2 bg-destructive/10 border border-destructive/20 rounded px-3 py-1.5 text-xs text-destructive font-medium';
+                    li.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-destructive"></span> ${sub}`;
+                    weakList.appendChild(li);
+                });
+            } else {
+                weakList.innerHTML = '<li class="text-xs text-muted-foreground italic">Bom progresso! Sem fraquezas severas registadas nos simulados recentes.</li>';
+            }
+
+            // Bloco 4: Alertas
+            const alertsList = document.getElementById('alerts-list');
+            const alertsContainer = document.getElementById('alerts-container');
+            alertsList.innerHTML = '';
+            
+            if (data.alerts.length > 0) {
+                alertsContainer.classList.remove('hidden');
+                data.alerts.forEach(alert => {
+                    const div = document.createElement('div');
+                    const isDanger = alert.type === 'danger';
+                    div.className = `flex items-center gap-3 p-4 rounded-lg border text-sm font-medium ${isDanger ? 'bg-destructive/10 border-destructive/30 text-destructive' : 'bg-warning/10 border-warning/30 text-warning'}`;
+                    div.innerHTML = `<span class="text-lg">${alert.icon}</span> <span>${alert.message}</span>`;
+                    alertsList.appendChild(div);
+                });
+            } else {
+                alertsContainer.classList.add('hidden');
+            }
+
+            // Renderização do gráfico SVG
+            renderChart(data.learning.simulado_evolution);
+        }
+
+        function renderChart(history) {
+            const chartSvg = document.getElementById('evolution-chart');
+            const fallback = document.getElementById('chart-fallback');
+            const chartPath = document.getElementById('chart-path');
+            const chartDots = document.getElementById('chart-dots');
+
+            if (!history || history.length < 2) {
+                chartSvg.classList.add('hidden');
+                fallback.classList.remove('hidden');
+                return;
+            }
+
+            chartSvg.classList.remove('hidden');
+            fallback.classList.add('hidden');
+            chartDots.innerHTML = '';
+
+            const paddingLeft = 30;
+            const paddingRight = 30;
+            const paddingTop = 20;
+            const paddingBottom = 20;
+            const width = 500;
+            const height = 150;
+
+            const chartWidth = width - paddingLeft - paddingRight;
+            const chartHeight = height - paddingTop - paddingBottom;
+
+            const xStep = chartWidth / (history.length - 1);
+            let pathD = '';
+
+            history.forEach((attempt, index) => {
+                const x = paddingLeft + index * xStep;
+                // Notas variam de 0 a 100. Inverter para coordenada Y do SVG (0 é topo, 150 é base)
+                const y = height - paddingBottom - (attempt.score / 100) * chartHeight;
+
+                if (index === 0) {
+                    pathD = `M ${x} ${y}`;
+                } else {
+                    pathD += ` L ${x} ${y}`;
+                }
+
+                // Criar pontos individuais
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', '4');
+                circle.setAttribute('fill', 'hsl(var(--primary))');
+                circle.setAttribute('stroke', '#0c0f16');
+                circle.setAttribute('stroke-width', '2');
+                
+                // Add a title element for simple hover tooltips
+                const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                title.textContent = `${attempt.score}% (${attempt.correct} acertos)`;
+                circle.appendChild(title);
+                
+                chartDots.appendChild(circle);
+
+                // Criar rótulos simples de texto acima do ponto
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x);
+                text.setAttribute('y', y - 8);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', '#888');
+                text.setAttribute('font-size', '9px');
+                text.setAttribute('font-family', 'Segoe UI, sans-serif');
+                text.textContent = `${attempt.score}%`;
+                chartDots.appendChild(text);
+            });
+
+            chartPath.setAttribute('d', pathD);
+        }
+    </script>
+</body>
+</html>

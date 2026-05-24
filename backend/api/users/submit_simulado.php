@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $gabarito = $_SESSION['active_simulado_gabarito'];
+    $subjects = $_SESSION['active_simulado_subjects'] ?? [];
     $university = $_SESSION['active_simulado_university'] ?? 'Universidade de Angola';
     $course = $_SESSION['active_simulado_course'] ?? 'Curso Alvo';
     $category = $_SESSION['active_simulado_category'] ?? 'Geral';
@@ -39,22 +40,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $totalQuestions = count($gabarito);
     $correctCount = 0;
     $detailedFeedback = [];
-    $incorrectSubjects = [];
+    $incorrectSubjects = []; // Lista de disciplinas onde errou (Matemática, Física, etc)
+    $incorrectQuestions = []; // Questão 1, Questão 2 etc
 
     // Avaliar as respostas
     foreach ($gabarito as $qId => $correctVal) {
         $userVal = isset($userAnswers[$qId]) ? trim(strtoupper($userAnswers[$qId])) : '';
         $isCorrect = ($userVal === $correctVal);
+        $subject = $subjects[$qId] ?? 'Geral';
+        
         if ($isCorrect) {
             $correctCount++;
         } else {
-            $incorrectSubjects[] = "Questão " . $qId;
+            $incorrectQuestions[] = "Questão " . $qId;
+            if (!in_array($subject, $incorrectSubjects)) {
+                $incorrectSubjects[] = $subject;
+            }
         }
 
         $detailedFeedback[$qId] = [
             'user_answer' => $userVal,
             'correct_answer' => $correctVal,
-            'is_correct' => $isCorrect
+            'is_correct' => $isCorrect,
+            'subject' => $subject
         ];
     }
 
@@ -64,12 +72,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo->beginTransaction();
 
-        // 1. Gravar a tentativa em exam_attempts
+        // 1. Gravar a tentativa em exam_attempts com correct_count, total_questions e weak_subjects
         $stmtAttempt = $pdo->prepare('
-            INSERT INTO exam_attempts (user_id, score_percentage) 
-            VALUES (?, ?)
+            INSERT INTO exam_attempts (user_id, score_percentage, correct_count, total_questions, weak_subjects) 
+            VALUES (?, ?, ?, ?, ?)
         ');
-        $stmtAttempt->execute([$userId, $scorePercentage]);
+        $stmtAttempt->execute([
+            $userId, 
+            $scorePercentage, 
+            $correctCount, 
+            $totalQuestions, 
+            json_encode($incorrectSubjects, JSON_UNESCAPED_UNICODE)
+        ]);
+
+        // 2. Inserir nós de [REVISÃO] no user_roadmap do aluno para cada disciplina fraca
+        if (!empty($incorrectSubjects)) {
+            // Obter ordem máxima actual
+            $stmtMaxOrder = $pdo->prepare('SELECT COALESCE(MAX(order_num), 0) FROM user_roadmap WHERE user_id = ?');
+            $stmtMaxOrder->execute([$userId]);
+            $maxOrder = (int)$stmtMaxOrder->fetchColumn();
+
+            // Inserir nós de revisão
+            $stmtInsertNode = $pdo->prepare('
+                INSERT INTO user_roadmap (user_id, subject, topic, description, order_num, status, is_review)
+                VALUES (?, ?, ?, ?, ?, ?, 1)
+            ');
+
+            foreach ($incorrectSubjects as $sub) {
+                // Verificar se já existe um nó de revisão não completado para esta disciplina para evitar duplicados infinitos
+                $stmtCheck = $pdo->prepare('
+                    SELECT COUNT(*) FROM user_roadmap 
+                    WHERE user_id = ? AND subject = ? AND is_review = 1 AND status != \'completed\'
+                ');
+                $stmtCheck->execute([$userId, $sub]);
+                $exists = (int)$stmtCheck->fetchColumn();
+
+                if (!$exists) {
+                    $maxOrder++;
+                    $topicName = "[REVISÃO] " . $sub;
+                    $desc = "O Sekulo inseriu este módulo de revisão porque falhaste perguntas de {$sub} no simulado. Estuda a teoria e faz exercícios.";
+                    $stmtInsertNode->execute([
+                        $userId,
+                        $sub,
+                        $topicName,
+                        $desc,
+                        $maxOrder,
+                        'available' // Sempre disponível para revisão imediata
+                    ]);
+                }
+            }
+        }
 
         $xpEarned = 0;
         $sekuloMessage = '';
@@ -77,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($passed) {
             $xpEarned = 500; // Super Recompensa de Simulado (+500 XP)
 
-            // 2. Incrementar XP, Sequência (streak) e redefinir atraso na tabela user_stats
+            // 3. Incrementar XP, Sequência (streak) e redefinir atraso na tabela user_stats
             $stmtStats = $pdo->prepare('
                 UPDATE user_stats 
                 SET xp_total = xp_total + ?,
@@ -104,13 +156,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtLeague->execute([$league, $userId]);
         }
 
-        // 3. Obter Veredicto e conselhos do Sekulo
+        // 4. Obter Veredicto e conselhos do Sekulo (passando a lista de disciplinas erradas)
         $sekuloMessage = getSekuloVerdict($correctCount, $totalQuestions, $university, $course, $passed, $incorrectSubjects);
 
         $pdo->commit();
 
         // Limpar os dados do simulado ativo na sessão
         unset($_SESSION['active_simulado_gabarito']);
+        unset($_SESSION['active_simulado_subjects']);
         unset($_SESSION['active_simulado_university']);
         unset($_SESSION['active_simulado_course']);
         unset($_SESSION['active_simulado_category']);
@@ -125,7 +178,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'sekulo_message' => $sekuloMessage,
             'feedback' => $detailedFeedback,
             'university' => $university,
-            'specific_course' => $course
+            'specific_course' => $course,
+            'added_reviews' => $incorrectSubjects
         ]);
 
     } catch (Exception $e) {

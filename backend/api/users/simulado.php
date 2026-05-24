@@ -46,6 +46,7 @@ try {
 
     // 3. Preparar o Gabarito Seguro no Servidor (Prevenir trapaças)
     $gabarito = [];
+    $subjects = [];
     $clientQuestions = [];
 
     foreach ($rawExamQuestions as $index => $q) {
@@ -53,6 +54,7 @@ try {
         
         // Guardar gabarito na sessão
         $gabarito[$qId] = trim(strtoupper($q['correct_answer']));
+        $subjects[$qId] = $q['subject'];
 
         // Preparar JSON para o cliente (ocultando a resposta correta!)
         $clientQuestions[] = [
@@ -65,6 +67,7 @@ try {
 
     // Guardar gabarito completo e dados da universidade/curso nas variáveis de sessão
     $_SESSION['active_simulado_gabarito'] = $gabarito;
+    $_SESSION['active_simulado_subjects'] = $subjects;
     $_SESSION['active_simulado_university'] = $university;
     $_SESSION['active_simulado_course'] = $specificCourse;
     $_SESSION['active_simulado_category'] = $courseCategory;

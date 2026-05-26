@@ -1,0 +1,23 @@
+<IfModule mod_headers.c>
+    # Capturar a origem da requisição e verificar se é permitida (incluindo subdomínios do vercel.app)
+    SetEnvIf Origin "^https?://([a-zA-Z0-9-]+\.vercel\.app|localhost(:\d+)?|127\.0\.0\.1(:\d+)?)$" ALLOWED_ORIGIN=$0
+    
+    # Remover cabeçalhos CORS duplicados que possam vir do PHP ou de outra configuração global
+    Header always unset Access-Control-Allow-Origin
+    Header unset Access-Control-Allow-Origin
+    Header always unset Access-Control-Allow-Credentials
+    Header unset Access-Control-Allow-Credentials
+    
+    # Definir os cabeçalhos corretos
+    Header always set Access-Control-Allow-Origin %{ALLOWED_ORIGIN}e env=ALLOWED_ORIGIN
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+</IfModule>
+
+# Responder imediatamente 200 OK para requisições OPTIONS (Preflight)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ - [R=200,L]
+</IfModule>

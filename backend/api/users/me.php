@@ -10,9 +10,8 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
-// Buscar dados do usuário e stats (usando JOIN)
 $stmt = $pdo->prepare('
-    SELECT u.id, u.email, u.display_name, u.onboarded_at, s.xp_total, s.current_streak, s.delay_days, s.weekly_xp, s.league 
+    SELECT u.id, u.email, u.phone, u.display_name, u.onboarded_at, u.is_active, u.role, s.xp_total, s.current_streak, s.delay_days, s.weekly_xp, s.league 
     FROM users u 
     LEFT JOIN user_stats s ON u.id = s.user_id 
     WHERE u.id = ?

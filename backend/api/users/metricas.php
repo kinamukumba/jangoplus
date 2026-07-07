@@ -114,6 +114,39 @@ try {
         $alerts[] = ['type' => 'warning', 'icon' => '📚', 'message' => 'Menos de 1 missão por cada 2 dias. Tens de estudar mais.'];
     }
 
+    // ── Bloco 5 — Progresso Global ───────────────────────────────────────────
+    $stmt = $pdo->prepare("SELECT xp_total, league FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
+    $xpTotal = (int)($userRow['xp_total'] ?? 0);
+    $league  = $userRow['league'] ?? 'bronze';
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM daily_missions WHERE user_id=? AND status='completed'");
+    $stmt->execute([$userId]);
+    $totalMissionsAllTime = (int)$stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM exam_attempts WHERE user_id=?");
+    $stmt->execute([$userId]);
+    $totalSimuladosAllTime = (int)$stmt->fetchColumn();
+
+    // ── Recomendações personalizadas baseadas nas disciplinas fracas ─────────
+    $recommendations = [];
+    $disciplineAdvice = [
+        'Matemática'       => 'Foca em Funções, Geometria e Cálculo Diferencial. Faz pelo menos 10 exercícios por dia.',
+        'Física'           => 'Revê Mecânica e Termodinâmica. Aprende as fórmulas de cor e pratica com problemas numéricos.',
+        'Biologia'         => 'Estuda Citologia e Genética com profundidade. Usa mapas mentais para memorizar ciclos.',
+        'Química'          => 'Concentra-te em Estequiometria e Ligações Químicas. Faz as reações mais comuns repetidamente.',
+        'História'         => 'Cria uma linha do tempo dos eventos mais importantes. Relaciona causas e consequências.',
+        'Geografia'        => 'Aprende os mapas de Angola e África. Foca em climatologia e recursos naturais.',
+        'Língua Portuguesa'=> 'Lê textos e identifica figuras de linguagem. Pratica a gramática com exercícios escritos.',
+    ];
+    foreach ($weakDisciplines as $disc) {
+        $recommendations[] = [
+            'discipline' => $disc,
+            'advice'     => $disciplineAdvice[$disc] ?? "Dedica mais tempo ao estudo de {$disc} e completa simulados focados nessa disciplina.",
+        ];
+    }
+
     echo json_encode([
         'success' => true,
         'core' => [
@@ -123,19 +156,26 @@ try {
             'churn'          => $churn,
         ],
         'engagement' => [
-            'streak'          => $streak,
-            'missions_per_day' => $missionsPerDay,
+            'streak'            => $streak,
+            'missions_per_day'  => $missionsPerDay,
             'avg_daily_minutes' => round($avgTime),
             'weekly_frequency'  => $weeklyFreq,
             'weekly_xp'         => (int)($stats['weekly_xp'] ?? 0),
         ],
         'learning' => [
-            'simulado_evolution' => $simuladoEvolution,
-            'weak_disciplines'   => $weakDisciplines,
-            'global_accuracy'    => $globalAccuracy,
-            'total_simulados'    => count($exams),
+            'simulado_evolution'    => $simuladoEvolution,
+            'weak_disciplines'      => $weakDisciplines,
+            'global_accuracy'       => $globalAccuracy,
+            'total_simulados'       => count($exams),
         ],
-        'alerts' => $alerts,
+        'progress' => [
+            'xp_total'              => $xpTotal,
+            'league'                => $league,
+            'total_missions'        => $totalMissionsAllTime,
+            'total_simulados'       => $totalSimuladosAllTime,
+        ],
+        'recommendations' => $recommendations,
+        'alerts'          => $alerts,
     ]);
 } catch (PDOException $e) {
     http_response_code(500);

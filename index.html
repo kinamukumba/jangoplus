@@ -50,13 +50,18 @@
                 </div>
 
                 <div class="space-y-1.5">
-                    <label for="email" class="uppercase-tight text-[10px]">Email</label>
-                    <input type="email" id="email" required autocomplete="email" class="input-base" />
+                    <label id="email-label" for="email" class="uppercase-tight text-[10px]">Email ou Nº de Telefone</label>
+                    <input type="text" id="email" required placeholder="email@exemplo.com ou 9XXXXXXXX" class="input-base" />
+                </div>
+
+                <div id="phone-field" class="space-y-1.5 hidden">
+                    <label for="phone" class="uppercase-tight text-[10px]">Nº de Telefone</label>
+                    <input type="text" id="phone" placeholder="O teu número de telefone" class="input-base" />
                 </div>
 
                 <div class="space-y-1.5">
                     <label for="password" class="uppercase-tight text-[10px]">Palavra-passe</label>
-                    <input type="password" id="password" required minlength="6" autocomplete="current-password" class="input-base" />
+                    <input type="password" id="password" required placeholder="------" minlength="6" autocomplete="current-password" class="input-base" />
                 </div>
 
                 <div id="error-message" class="text-destructive text-xs hidden"></div>

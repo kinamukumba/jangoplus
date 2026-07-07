@@ -95,6 +95,28 @@ function generateSimuladoQuestions($university, $courseCategory, $specificCourse
  * Geração de Simulado via Gemini 2.0 Flash
  */
 function generateSimuladoWithGemini($apiKey, $university, $courseCategory, $specificCourse) {
+    global $pdo;
+
+    $trainingContext = '';
+    try {
+        $stmtTrain = $pdo->prepare('
+            SELECT topic, content 
+            FROM sekulo_training 
+            WHERE course_category = ? OR LOWER(specific_course) = LOWER(?)
+        ');
+        $stmtTrain->execute([$courseCategory, $specificCourse]);
+        $trainingRows = $stmtTrain->fetchAll();
+        
+        if (!empty($trainingRows)) {
+            $trainingContext = "\nIMPORTANTE: O administrador treinou o Sekulo com os seguintes conteúdos e temas teóricos. Você DEVE usar estas informações para inspirar e formular os assuntos e enunciados das perguntas do simulado:\n";
+            foreach ($trainingRows as $row) {
+                $trainingContext .= "- Assunto: {$row['topic']}\n  Detalhes Teóricos: {$row['content']}\n";
+            }
+        }
+    } catch (Exception $e) {
+        // Silently skip if query fails
+    }
+
     $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $apiKey;
 
     $prompt = "Você é o 'Sekulo', o mestre severo e focado da plataforma Jango+. Sua missão é gerar um simulado preparatório completo de exames de acesso de Angola com exatamente 10 perguntas de múltipla escolha.
@@ -105,6 +127,8 @@ As disciplinas cobradas no simulado devem obedecer estritamente à área de estu
 - Se for Engenharia: Matemática (4 questões), Física (4 questões), Língua Portuguesa (2 questões).
 - Se for Saúde: Biologia (4 questões), Química (4 questões), Física (1 questão), Língua Portuguesa (1 questão).
 - Se for Económicas/Sociais: Matemática (3 questões), Geografia/História (5 questões), Língua Portuguesa (2 questões).
+
+{$trainingContext}
 
 Retorne rigorosamente apenas um JSON Array com exatamente 10 elementos. Cada elemento deve conter as seguintes chaves com valores em português:
 - 'subject': Disciplina correspondente.

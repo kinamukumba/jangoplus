@@ -203,6 +203,28 @@ function generateRoadmap($university, $courseCategory, $specificCourse, $studyHo
  * Chama a API da Gemini 2.0 Flash para criar o Roadmap Personalizado em JSON
  */
 function generateWithGemini($apiKey, $university, $courseCategory, $specificCourse, $studyHours, $motivation, $weakSubjects, $strongSubjects) {
+    global $pdo;
+
+    $trainingContext = '';
+    try {
+        $stmtTrain = $pdo->prepare('
+            SELECT topic, content 
+            FROM sekulo_training 
+            WHERE course_category = ? OR LOWER(specific_course) = LOWER(?)
+        ');
+        $stmtTrain->execute([$courseCategory, $specificCourse]);
+        $trainingRows = $stmtTrain->fetchAll();
+        
+        if (!empty($trainingRows)) {
+            $trainingContext = "\nIMPORTANTE: O administrador cadastrou os seguintes tópicos e resumos teóricos específicos para este curso. Você DEVE usar estes tópicos e referências para construir o roadmap:\n";
+            foreach ($trainingRows as $row) {
+                $trainingContext .= "- Tópico: {$row['topic']}\n  Referência Teórica: {$row['content']}\n";
+            }
+        }
+    } catch (Exception $e) {
+        // Silently skip if query fails
+    }
+
     $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $apiKey;
 
     $weakStr = !empty($weakSubjects) ? implode(', ', $weakSubjects) : 'Nenhuma identificada';
@@ -213,6 +235,8 @@ function generateWithGemini($apiKey, $university, $courseCategory, $specificCour
 No teste de diagnóstico recente, os pontos fracos (disciplinas com baixo rendimento) foram: {$weakStr}.
 Os pontos fortes do estudante foram: {$strongStr}.
 IMPORTANTE: Dê prioridade a abordar os pontos fracos nos primeiros tópicos do cronograma, adicionando alertas claros nas descrições de que ele precisa de foco extra nestas áreas.
+
+{$trainingContext}
 
 Retorne rigorosamente apenas um JSON Array com exatamente 6 elementos. Cada elemento do array deve conter as seguintes chaves com valores em português:
 - 'subject': Disciplina (Ex: Matemática, Física, Biologia, Química, História, Geografia, Língua Portuguesa) adaptada aos exames de acesso de Angola para esta área.

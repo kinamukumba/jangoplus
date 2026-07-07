@@ -51,35 +51,8 @@
                 <div id="bar-progress" class="h-full bg-primary w-1/3 transition-all duration-300"></div>
             </div>
 
-            <!-- STEP 1: Personal Profile -->
-            <div id="step-1" class="step-transition space-y-6">
-                <div class="space-y-2">
-                    <h2 class="font-display text-2xl font-bold tracking-tight">Olá! Vamos preparar o teu plano.</h2>
-                    <p class="text-xs text-muted-foreground">
-                        Precisamos de entender a tua rotina e o teu foco para desenhar a melhor rota de estudos.
-                    </p>
-                </div>
-
-                <div class="space-y-3">
-                    <label class="block uppercase-tight text-[10px] text-muted-foreground tracking-wider">Quantas horas podes estudar por dia?</label>
-                    <div class="flex items-center gap-4 bg-muted/30 border border-border p-4 rounded-lg">
-                        <input type="range" id="study-hours" min="1" max="8" value="3" class="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary" />
-                        <span id="hours-val" class="font-display text-2xl font-bold text-primary w-12 text-center font-mono">3h</span>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label for="motivation" class="block uppercase-tight text-[10px] text-muted-foreground tracking-wider">Qual é a tua principal motivação?</label>
-                    <textarea id="motivation" rows="3" placeholder="Ex: Entrar no curso dos meus sonhos e dar orgulho à minha família..." class="input-base w-full p-3 bg-muted/20 text-sm resize-none" required></textarea>
-                </div>
-
-                <button id="btn-to-step2" class="btn-primary w-full h-12 uppercase-tight text-xs mt-4">
-                    Continuar para Metas
-                </button>
-            </div>
-
-            <!-- STEP 2: Academic Goals -->
-            <div id="step-2" class="step-transition hidden space-y-5">
+            <!-- STEP 1: Academic Goals (Swapped) -->
+            <div id="step-1" class="step-transition space-y-5">
                 <div class="space-y-1">
                     <h2 class="font-display text-2xl font-bold tracking-tight">O teu Alvo Académico</h2>
                     <p class="text-xs text-muted-foreground">
@@ -128,6 +101,35 @@
                 <div class="space-y-1.5">
                     <label for="specific-course" class="block uppercase-tight text-[10px] text-muted-foreground">Curso Específico</label>
                     <input type="text" id="specific-course" placeholder="Ex: Engenharia Informática, Direito, Medicina..." class="input-base w-full h-11 px-3 bg-muted/20 text-sm" required />
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button id="btn-to-step2" class="w-full btn-primary h-12 uppercase-tight text-xs">
+                        Continuar para Perfil de Estudo
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Personal Profile (Swapped) -->
+            <div id="step-2" class="step-transition hidden space-y-6">
+                <div class="space-y-2">
+                    <h2 class="font-display text-2xl font-bold tracking-tight">Olá! Vamos preparar o teu plano.</h2>
+                    <p class="text-xs text-muted-foreground">
+                        Precisamos de entender a tua rotina e o teu foco para desenhar a melhor rota de estudos.
+                    </p>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="block uppercase-tight text-[10px] text-muted-foreground tracking-wider">Quantas horas podes estudar por dia?</label>
+                    <div class="flex items-center gap-4 bg-muted/30 border border-border p-4 rounded-lg">
+                        <input type="range" id="study-hours" min="1" max="8" value="3" class="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary" />
+                        <span id="hours-val" class="font-display text-2xl font-bold text-primary w-12 text-center font-mono">3h</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="motivation" class="block uppercase-tight text-[10px] text-muted-foreground tracking-wider">Qual é a tua principal motivação?</label>
+                    <textarea id="motivation" rows="3" placeholder="Ex: Entrar no curso dos meus sonhos e dar orgulho à minha família..." class="input-base w-full p-3 bg-muted/20 text-sm resize-none" required></textarea>
                 </div>
 
                 <div class="flex items-center gap-2 pt-2">
@@ -250,11 +252,15 @@
                 });
             });
 
-            // Navigation Step 1 -> Step 2
+            // Navigation Step 1 -> Step 2 (Academic Goals -> Personal Profile)
             btnToStep2.addEventListener('click', () => {
-                const motivation = document.getElementById('motivation').value.trim();
-                if (!motivation) {
-                    showError('Por favor, diz-nos qual é a tua motivação de estudo.');
+                const specificCourse = document.getElementById('specific-course').value.trim();
+                if (!selectedArea) {
+                    showError('Por favor, seleciona uma área de estudos.');
+                    return;
+                }
+                if (!specificCourse) {
+                    showError('Por favor, insere o teu curso de destino.');
                     return;
                 }
                 errorBox.classList.add('hidden');
@@ -265,7 +271,7 @@
                 stepIndicator.textContent = 'Passo 2 de 3';
             });
 
-            // Navigation Step 2 -> Step 1
+            // Navigation Step 2 -> Step 1 (Personal Profile -> Academic Goals)
             btnBackToStep1.addEventListener('click', () => {
                 step2.classList.add('hidden');
                 step1.classList.remove('hidden');
@@ -274,15 +280,11 @@
                 errorBox.classList.add('hidden');
             });
 
-            // Navigation Step 2 -> Step 3 (Diagnostic Quiz)
+            // Navigation Step 2 -> Step 3 (Personal Profile -> Diagnostic Quiz)
             btnToStep3.addEventListener('click', async () => {
-                const specificCourse = document.getElementById('specific-course').value.trim();
-                if (!selectedArea) {
-                    showError('Por favor, seleciona uma área de estudos.');
-                    return;
-                }
-                if (!specificCourse) {
-                    showError('Por favor, insere o teu curso de destino.');
+                const motivation = document.getElementById('motivation').value.trim();
+                if (!motivation) {
+                    showError('Por favor, diz-nos qual é a tua motivação de estudo.');
                     return;
                 }
                 errorBox.classList.add('hidden');

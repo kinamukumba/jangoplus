@@ -110,9 +110,30 @@ function generateQuiz($university, $subject, $topic) {
  * Gemini API Quiz Generator
  */
 function generateQuizWithGemini($apiKey, $university, $subject, $topic) {
+    global $pdo;
+
+    $trainingContext = '';
+    try {
+        $stmtTrain = $pdo->prepare('
+            SELECT content 
+            FROM sekulo_training 
+            WHERE topic = ? OR topic LIKE ?
+        ');
+        $stmtTrain->execute([$topic, "%$topic%"]);
+        $content = $stmtTrain->fetchColumn();
+        
+        if (!empty($content)) {
+            $trainingContext = "\nIMPORTANTE: Use o seguinte conteúdo teórico cadastrado pelo administrador para formular as perguntas deste quiz:\nReferência Teórica: " . $content . "\n";
+        }
+    } catch (Exception $e) {
+        // Silently skip if query fails
+    }
+
     $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $apiKey;
 
     $prompt = "Você é o 'Sekulo', o mestre severo e focado da plataforma Jango+. Sua tarefa é gerar um mini-quiz de exatamente 3 perguntas de escolha múltipla (A, B, C, D) para testar os conhecimentos de um aluno angolano no tema '{$topic}' da disciplina de '{$subject}' para a entrada na '{$university}'. As perguntas devem ser realistas e de nível de exame de acesso.
+
+{$trainingContext}
 
 Retorne rigorosamente apenas um JSON Object contendo a chave 'questions' com um array de exatamente 3 objetos. Cada objeto de pergunta deve ter:
 - 'id': Número de 1 a 3.

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probabilidade de Aprovação - Jango+ Sekulo</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script src="../assets/js/tailwind-config.js"></script>
+
+    <!-- API Config / CORS helper -->
+    <script src="../assets/js/api-config.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="px-6 py-5 border-b border-border flex items-center justify-between">
+        <div>
+            <div class="uppercase-tight text-[10px] text-muted-foreground tracking-widest">JANGO+</div>
+            <div class="font-display text-base font-bold tracking-tight">RESULTADO DO DIAGNÓSTICO</div>
+        </div>
+        <button id="logout-btn" class="text-xs text-destructive hover:underline font-mono">Terminar Sessão</button>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center px-5 py-8">
+        <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- CARD 1: DIAGNOSTIC & PROBABILITY -->
+            <section class="bg-card border border-border rounded-xl p-6 md:p-8 space-y-6 shadow-2xl flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <div class="uppercase-tight text-[10px] text-muted-foreground">RELATÓRIO DO SEKULO</div>
+                        <h2 id="target-title" class="font-display text-2xl font-bold tracking-tight">A analisar metas...</h2>
+                        <p id="target-subtitle" class="text-xs text-muted-foreground">...</p>
+                    </div>
+
+                    <!-- Circular Probability Gauge -->
+                    <div class="flex items-center gap-6 bg-muted/20 border border-border/40 p-4 rounded-lg">
+                        <div class="relative flex items-center justify-center shrink-0">
+                            <!-- SVG Circular Progress -->
+                            <svg class="w-24 h-24 transform -rotate-90">
+                                <circle cx="48" cy="48" r="40" stroke="oklch(0.22 0.006 60)" stroke-width="8" fill="transparent" />
+                                <circle id="gauge-circle" cx="48" cy="48" r="40" stroke="oklch(0.58 0.22 25)" stroke-width="8" fill="transparent" 
+                                    stroke-dasharray="251.2" stroke-dashoffset="251.2" class="transition-all duration-1000 ease-out" />
+                            </svg>
+                            <span id="prob-percentage" class="absolute font-display text-2xl font-black tabular-nums">0%</span>
+                        </div>
+                        <div>
+                            <div class="text-[10px] uppercase text-muted-foreground tracking-wider">Probabilidade de Aprovação</div>
+                            <div id="prob-status" class="font-display text-lg font-bold mt-0.5 text-destructive">Crítica</div>
+                            <p class="text-[10px] text-muted-foreground mt-1">Calculada com base no teu teste diagnóstico inicial.</p>
+                        </div>
+                    </div>
+
+                    <!-- Sekulo Verdict -->
+                    <div class="bg-muted/10 border border-border/40 rounded-lg p-4 relative">
+                        <div class="absolute -top-2.5 left-4 px-2 bg-card text-[9px] uppercase tracking-wider text-muted-foreground font-mono">Sekulo diz:</div>
+                        <p id="sekulo-verdict" class="text-sm italic text-foreground mt-1 font-medium leading-relaxed">
+                            "Carregando a análise do mestre..."
+                        </p>
+                    </div>
+
+                    <!-- Weak & Strong Subjects -->
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <div class="space-y-1.5">
+                            <span class="text-[10px] uppercase text-destructive font-bold tracking-wider">⚠️ Pontos Fracos</span>
+                            <ul id="weak-subjects" class="text-xs space-y-1 text-muted-foreground list-disc list-inside">
+                                <li>Carregando...</li>
+                            </ul>
+                        </div>
+                        <div class="space-y-1.5">
+                            <span class="text-[10px] uppercase text-success font-bold tracking-wider">✅ Pontos Fortes</span>
+                            <ul id="strong-subjects" class="text-xs space-y-1 text-muted-foreground list-disc list-inside">
+                                <li>Carregando...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 text-center">
+                    <p class="text-[10px] text-muted-foreground">Nota: O teu roadmap de 6 tópicos do Sekulo já foi estruturado.</p>
+                </div>
+            </section>
+
+            <!-- CARD 2: ACTIVATION & PACKAGES -->
+            <section class="bg-card border border-border rounded-xl p-6 md:p-8 space-y-6 shadow-2xl flex flex-col justify-between">
+                <div class="space-y-6">
+                    <div class="space-y-1">
+                        <div class="uppercase-tight text-[10px] text-primary tracking-widest font-mono">DESBLOQUEAR ACESSO</div>
+                        <h2 class="font-display text-2xl font-bold tracking-tight">Plano Preparação Completa</h2>
+                        <p class="text-xs text-muted-foreground">Obtém acesso vitalício à trilha inteligente do Sekulo e garante a tua aprovação.</p>
+                    </div>
+
+                    <!-- Price Tag -->
+                    <div class="bg-primary/5 border border-primary/20 p-5 rounded-lg flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-muted-foreground block uppercase tracking-wider">Taxa de Ativação Única</span>
+                            <span class="font-display text-3xl font-black text-primary mt-1 block">4.900 AOA</span>
+                        </div>
+                        <div class="px-2.5 py-1 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest rounded font-mono">
+                            VITALÍCIO
+                        </div>
+                    </div>
+
+                    <!-- Benefits list -->
+                    <ul class="text-xs space-y-2.5 text-muted-foreground">
+                        <li class="flex items-center gap-2">
+                            <span class="text-primary font-bold">✓</span> <span>Roadmap Adaptativo de 6 Módulos Personalizados</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-primary font-bold">✓</span> <span>Quizzes Diários com o Sekulo (+150 XP por aprovação)</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-primary font-bold">✓</span> <span>Simulados Ilimitados de 10 Questões do Exame Real</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-primary font-bold">✓</span> <span>Módulos Dinâmicos de Revisão com Base nos Teus Erros</span>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <span class="text-primary font-bold">✓</span> <span>Ranking Semanal Competitivo e Ligas (Bronze → Ouro)</span>
+                        </li>
+                    </ul>
+
+                    <!-- Payment Bank Details -->
+                    <div class="bg-muted/30 border border-border/80 rounded-lg p-4 space-y-2.5">
+                        <span class="text-[10px] uppercase font-bold text-muted-foreground tracking-widest block border-b border-border/50 pb-1.5">Dados Bancários para Depósito/Transferência</span>
+                        <div class="grid grid-cols-3 gap-y-1 text-xs">
+                            <span class="text-muted-foreground">Banco:</span>
+                            <span class="col-span-2 font-semibold text-foreground">BAI</span>
+                            
+                            <span class="text-muted-foreground">Conta:</span>
+                            <span class="col-span-2 font-semibold text-foreground font-mono">927558120</span>
+                            
+                            <span class="text-muted-foreground">IBAN:</span>
+                            <span class="col-span-2 font-semibold text-foreground font-mono text-[10px]">AO06 0040 0000 9275 5812 0154 9</span>
+                            
+                            <span class="text-muted-foreground">Titular:</span>
+                            <span class="col-span-2 font-semibold text-foreground">Jango+ Sekulo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <a id="btn-pay-whatsapp" href="#" target="_blank" class="w-full h-12 btn-primary uppercase-tight text-xs flex items-center justify-center gap-2 font-bold bg-success hover:bg-success/90 text-white border-0">
+                        <!-- Simple WhatsApp SVG Icon -->
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.588 1.45 5.416 1.451 5.38 0 9.761-4.385 9.764-9.766.002-2.607-1.01-5.059-2.85-6.902C17.135 2.093 14.69 1.08 12.012 1.08c-5.388 0-9.769 4.384-9.773 9.768-.002 1.902.504 3.759 1.465 5.348l-.995 3.637 3.738-.98zm11.387-5.464c-.307-.154-1.817-.897-2.099-.999-.282-.102-.487-.153-.692.154-.205.307-.795.999-.974 1.205-.179.205-.359.23-.666.077-.307-.154-1.297-.478-2.47-1.527-.913-.815-1.53-1.82-1.71-2.127-.18-.307-.018-.473.135-.626.137-.138.307-.359.461-.538.154-.179.206-.308.307-.513.102-.205.051-.384-.025-.538-.077-.154-.692-1.667-.949-2.282-.25-.601-.506-.519-.692-.529-.18-.01-.385-.01-.59-.01-.205 0-.538.077-.82.384-.282.307-1.077 1.051-1.077 2.564 0 1.513 1.102 2.974 1.256 3.179.154.205 2.17 3.313 5.258 4.646.734.317 1.309.507 1.758.649.737.234 1.408.201 1.938.122.59-.088 1.817-.743 2.073-1.459.256-.718.256-1.333.179-1.459-.077-.127-.282-.205-.59-.359z"/>
+                        </svg>
+                        Enviar Comprovativo via WhatsApp
+                    </a>
+                    <p class="text-[10px] text-muted-foreground text-center">Serás redirecionado para o WhatsApp +244 927 558 120 para enviar o comprovativo bancário.</p>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-[10px] text-muted-foreground border-t border-border">
+        Jango+ Sekulo © 2026. A consistência aprova.
+    </footer>
+
+    <!-- Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load user data and stats
+            try {
+                const response = await fetch('../backend/api/users/stats.php');
+                const data = await response.json();
+                
+                if (data && data.success) {
+                    const stats = data.stats;
+                    
+                    // Fill text details
+                    document.getElementById('target-title').textContent = stats.specific_course || 'Curso Alvo';
+                    document.getElementById('target-subtitle').textContent = `${stats.university || 'Universidade'} • Área de ${stats.course_category || 'Área'}`;
+                    
+                    // Calculate Diagnostic Score & Probability
+                    let correctCount = 0;
+                    let totalCount = 10;
+                    let scorePct = 0;
+                    
+                    if (stats.diagnostic && stats.diagnostic.raw_scores) {
+                        const scores = stats.diagnostic.raw_scores;
+                        // Calculate average of the disciplines
+                        let keys = Object.keys(scores);
+                        if (keys.length > 0) {
+                            let totalPct = 0;
+                            keys.forEach(k => {
+                                totalPct += scores[k];
+                            });
+                            scorePct = totalPct / keys.length;
+                        }
+                    } else {
+                        // Default fallback logic based on course category
+                        scorePct = 40; 
+                    }
+                    
+                    // Display probability
+                    const probVal = Math.round(scorePct);
+                    document.getElementById('prob-percentage').textContent = `${probVal}%`;
+                    
+                    // Animate circular gauge
+                    // Circumference of r=40 circle is 2 * PI * 40 = 251.2
+                    const circle = document.getElementById('gauge-circle');
+                    const offset = 251.2 - (probVal / 100) * 251.2;
+                    circle.style.strokeDashoffset = offset;
+                    
+                    // Color and text rating based on probability
+                    const probStatus = document.getElementById('prob-status');
+                    if (probVal >= 70) {
+                        probStatus.textContent = 'Muito Boa';
+                        probStatus.className = 'font-display text-lg font-bold mt-0.5 text-success';
+                        circle.style.stroke = 'oklch(0.68 0.15 145)'; // Green
+                    } else if (probVal >= 50) {
+                        probStatus.textContent = 'Média/Instável';
+                        probStatus.className = 'font-display text-lg font-bold mt-0.5 text-warning';
+                        circle.style.stroke = 'oklch(0.79 0.16 85)'; // Yellow/Orange
+                    } else {
+                        probStatus.textContent = 'Crítica/Insuficiente';
+                        probStatus.className = 'font-display text-lg font-bold mt-0.5 text-destructive';
+                        circle.style.stroke = 'oklch(0.58 0.22 25)'; // Red
+                    }
+
+                    // Sekulo's verdict
+                    const verdictText = document.getElementById('sekulo-verdict');
+                    if (probVal >= 70) {
+                        verdictText.textContent = `"Tens uma base aceitável de ${probVal}%. Mas o exame real na ${stats.university} é impiedoso. Se relaxares agora, serás ultrapassado por centenas de candidatos. Desbloqueia o teu plano completo e treina até à perfeição."`;
+                    } else if (probVal >= 50) {
+                        verdictText.textContent = `"Estás na corda bamba com ${probVal}%. É um nível medíocre que te deixará na lista de suplentes, dependente da sorte. O Sekulo não tolera dependência da sorte. Ativa o teu plano e começa o treino intensivo."`;
+                    } else {
+                        verdictText.textContent = `"Um desastre absoluto! A tua probabilidade de entrar em ${stats.specific_course} é de apenas ${probVal}%. Com este nível básico, serias triturado no exame de acesso. Queres mudar isto ou vais continuar a sonhar acordado? Ativa o teu plano completo agora."`;
+                    }
+
+                    // Weak and Strong subjects lists
+                    const weakList = document.getElementById('weak-subjects');
+                    weakList.innerHTML = '';
+                    if (stats.diagnostic && stats.diagnostic.weak_subjects && stats.diagnostic.weak_subjects.length > 0) {
+                        stats.diagnostic.weak_subjects.forEach(sub => {
+                            const li = document.createElement('li');
+                            li.textContent = sub;
+                            weakList.appendChild(li);
+                        });
+                    } else {
+                        const li = document.createElement('li');
+                        li.textContent = 'Nenhuma identificada';
+                        weakList.appendChild(li);
+                    }
+
+                    const strongList = document.getElementById('strong-subjects');
+                    strongList.innerHTML = '';
+                    if (stats.diagnostic && stats.diagnostic.strong_subjects && stats.diagnostic.strong_subjects.length > 0) {
+                        stats.diagnostic.strong_subjects.forEach(sub => {
+                            const li = document.createElement('li');
+                            li.textContent = sub;
+                            strongList.appendChild(li);
+                        });
+                    } else {
+                        const li = document.createElement('li');
+                        li.textContent = 'Nenhuma identificada';
+                        strongList.appendChild(li);
+                    }
+
+                    // Configure WhatsApp Button
+                    // We pull user identifier from session or database me.php
+                    const meRes = await fetch('../backend/api/users/me.php');
+                    const meData = await meRes.json();
+                    let userIdentifier = '';
+                    if (meData.success) {
+                        userIdentifier = meData.user.phone || meData.user.email || '';
+                    }
+
+                    const waMsg = `Olá Sekulo! Envio o comprovativo de pagamento do Jango+ Sekulo (4.900 AOA) para ativação do meu plano de estudo.\n\nEstudante: ${meData.user.display_name}\nContacto/E-mail: ${userIdentifier}\nCurso: ${stats.specific_course}\nUniversidade: ${stats.university}`;
+                    document.getElementById('btn-pay-whatsapp').href = `https://wa.me/244927558120?text=${encodeURIComponent(waMsg)}`;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+
+            // Setup logout button
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                try {
+                    await fetch('../backend/api/auth/logout.php', { method: 'POST' });
+                    window.location.href = '../index.html';
+                } catch (err) {
+                    console.error('Erro ao terminar sessão:', err);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

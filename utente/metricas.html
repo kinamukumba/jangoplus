@@ -145,6 +145,50 @@
                 </div>
             </section>
 
+            <!-- BLOCO 4: PROGRESSO GLOBAL -->
+            <section class="bg-card border border-border rounded-xl p-5 md:p-6 space-y-4">
+                <div class="flex items-center justify-between border-b border-border/60 pb-2">
+                    <h2 class="font-display text-sm font-bold uppercase tracking-wider text-muted-foreground">Bloco 4: Progresso Global</h2>
+                    <span id="progress-league-badge" class="text-xs text-amber-400 font-mono font-semibold capitalize">...</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                        <div class="text-[10px] uppercase text-muted-foreground">XP Total Acumulado</div>
+                        <div id="progress-xp" class="font-display text-2xl font-bold mt-1 text-amber-400">...</div>
+                        <div class="text-[9px] text-muted-foreground mt-1">Pontos de experiência totais</div>
+                    </div>
+                    <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                        <div class="text-[10px] uppercase text-muted-foreground">Liga Actual</div>
+                        <div id="progress-league" class="font-display text-lg font-bold mt-2 capitalize">...</div>
+                        <div class="text-[9px] text-muted-foreground mt-1">Nível de competição</div>
+                    </div>
+                    <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                        <div class="text-[10px] uppercase text-muted-foreground">Missões Concluídas</div>
+                        <div id="progress-missions" class="font-display text-2xl font-bold mt-1 text-indigo-400">...</div>
+                        <div class="text-[9px] text-muted-foreground mt-1">Total de missões completadas</div>
+                    </div>
+                    <div class="bg-muted/30 p-3 rounded-lg border border-border/30">
+                        <div class="text-[10px] uppercase text-muted-foreground">Simulados Realizados</div>
+                        <div id="progress-simulados" class="font-display text-2xl font-bold mt-1 text-primary">...</div>
+                        <div class="text-[9px] text-muted-foreground mt-1">Total de exames feitos</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BLOCO 5: RECOMENDAÇÕES DO SEKULO -->
+            <section id="recommendations-section" class="hidden bg-gradient-to-br from-card via-card to-muted/20 border border-amber-500/20 rounded-xl p-5 md:p-6 space-y-4">
+                <div class="flex items-center gap-3 border-b border-amber-500/20 pb-3">
+                    <span class="text-2xl">👴</span>
+                    <div>
+                        <h2 class="font-display text-sm font-bold uppercase tracking-wider text-amber-400">Bloco 5: Recomendações do Sekulo</h2>
+                        <p class="text-[10px] text-muted-foreground mt-0.5">Acções prioritárias baseadas nas tuas fraquezas identificadas nos simulados.</p>
+                    </div>
+                </div>
+                <div id="recommendations-list" class="space-y-3">
+                    <!-- Dynamic Recommendation Cards -->
+                </div>
+            </section>
+
         </main>
     </div>
 
@@ -255,7 +299,41 @@
                 weakList.innerHTML = '<li class="text-xs text-muted-foreground italic">Bom progresso! Sem fraquezas severas registadas nos simulados recentes.</li>';
             }
 
-            // Bloco 4: Alertas
+            // Bloco 4: Progresso Global
+            if (data.progress) {
+                document.getElementById('progress-xp').innerText = data.progress.xp_total.toLocaleString('pt-PT') + ' XP';
+                document.getElementById('progress-missions').innerText = data.progress.total_missions;
+                document.getElementById('progress-simulados').innerText = data.progress.total_simulados;
+                const leagueEl = document.getElementById('progress-league');
+                const leagueBadge = document.getElementById('progress-league-badge');
+                const leagueMap = { bronze: '🥉 Bronze', silver: '🥈 Prata', gold: '🥇 Ouro', diamond: '💎 Diamante' };
+                leagueEl.innerText = leagueMap[data.progress.league] || data.progress.league;
+                leagueBadge.innerText = `Liga ${data.progress.league.charAt(0).toUpperCase() + data.progress.league.slice(1)}`;
+            }
+
+            // Bloco 5: Recomendações do Sekulo
+            const recsSection = document.getElementById('recommendations-section');
+            const recsList = document.getElementById('recommendations-list');
+            if (data.recommendations && data.recommendations.length > 0) {
+                recsSection.classList.remove('hidden');
+                recsList.innerHTML = '';
+                data.recommendations.forEach((rec, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'flex items-start gap-4 bg-amber-950/20 border border-amber-500/20 rounded-lg p-4';
+                    card.innerHTML = `
+                        <div class="h-7 w-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-display font-black text-sm shrink-0 mt-0.5">${idx + 1}</div>
+                        <div>
+                            <div class="text-[10px] uppercase text-amber-500 font-bold tracking-wider mb-1">${rec.discipline}</div>
+                            <p class="text-xs text-muted-foreground leading-relaxed">${rec.advice}</p>
+                        </div>
+                    `;
+                    recsList.appendChild(card);
+                });
+            } else {
+                recsSection.classList.add('hidden');
+            }
+
+            // Alertas do Sekulo
             const alertsList = document.getElementById('alerts-list');
             const alertsContainer = document.getElementById('alerts-container');
             alertsList.innerHTML = '';

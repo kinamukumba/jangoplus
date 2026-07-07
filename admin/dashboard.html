@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="pt" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Jango+ Sekulo</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script src="../assets/js/tailwind-config.js"></script>
+
+    <!-- API Config / CORS helper -->
+    <script src="../assets/js/api-config.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+        .active-tab {
+            border-bottom: 2px solid oklch(0.60 0.18 270); /* Indigo accent */
+            color: oklch(0.97 0.005 80);
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground min-h-screen flex flex-col justify-between pb-12">
+
+    <!-- Top Navigation Header -->
+    <header class="px-6 py-5 border-b border-border bg-card/60 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded bg-indigo-600 text-white flex items-center justify-center font-display font-black text-xl">
+                JS
+            </div>
+            <div>
+                <div class="uppercase-tight text-[10px] text-muted-foreground tracking-widest">PAINEL DE CONTROLE</div>
+                <div class="font-display text-base font-bold tracking-tight text-indigo-400">ADMINISTRAÇÃO JANGO+ SEKULO</div>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <span id="admin-name" class="text-xs text-muted-foreground font-mono">Admin</span>
+            <button id="logout-btn" class="text-xs text-destructive hover:underline font-mono">Sair</button>
+        </div>
+    </header>
+
+    <!-- Admin Panel Summary Cards -->
+    <section class="max-w-7xl w-full mx-auto px-6 pt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-card border border-border p-5 rounded-xl shadow-lg">
+            <div class="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold">Total Utentes</div>
+            <div id="stat-total-users" class="font-display text-3xl font-black text-indigo-400 mt-2 tabular-nums">0</div>
+        </div>
+        <div class="bg-card border border-border p-5 rounded-xl shadow-lg">
+            <div class="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold">Utentes Activos</div>
+            <div id="stat-active-users" class="font-display text-3xl font-black text-success mt-2 tabular-nums">0</div>
+        </div>
+        <div class="bg-card border border-border p-5 rounded-xl shadow-lg">
+            <div class="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold">Utentes Pendentes</div>
+            <div id="stat-pending-users" class="font-display text-3xl font-black text-warning mt-2 tabular-nums">0</div>
+        </div>
+        <div class="bg-card border border-border p-5 rounded-xl shadow-lg">
+            <div class="text-[10px] uppercase text-muted-foreground tracking-wider font-semibold">Tópicos de Treino</div>
+            <div id="stat-total-training" class="font-display text-3xl font-black text-purple-400 mt-2 tabular-nums">0</div>
+        </div>
+    </section>
+
+    <!-- Tab Selection Bar -->
+    <div class="max-w-7xl w-full mx-auto px-6 mt-8 border-b border-border flex gap-6 text-sm font-semibold text-muted-foreground select-none">
+        <button id="tab-users-btn" class="py-2 active-tab transition-all">Gestão de Utentes</button>
+        <button id="tab-training-btn" class="py-2 transition-all">Treinar o Sekulo</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl w-full mx-auto px-6 mt-6 flex-grow">
+        
+        <!-- SECTION 1: USER MANAGEMENT -->
+        <section id="section-users" class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h3 class="font-display text-lg font-bold">Lista de Estudantes Registados</h3>
+                <div class="flex items-center gap-3 max-w-sm w-full">
+                    <input type="text" id="user-search" placeholder="Pesquisar por nome, email ou telefone..." class="input-base text-xs bg-card/60" />
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-card border border-border rounded-xl overflow-hidden shadow-lg">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-muted/30 border-b border-border text-muted-foreground uppercase text-[9px] tracking-wider">
+                                <th class="p-4">Estudante</th>
+                                <th class="p-4">E-mail / Telefone</th>
+                                <th class="p-4">Estado</th>
+                                <th class="p-4">Acesso / XP</th>
+                                <th class="p-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="divide-y divide-border">
+                            <!-- Dynamic Content -->
+                            <tr>
+                                <td colspan="5" class="p-8 text-center text-muted-foreground italic">Carregando utilizadores...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: SEKULO KNOWLEDGE TRAINING -->
+        <section id="section-training" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Add/Edit Form (5/12 columns) -->
+            <div class="lg:col-span-5 bg-card border border-border p-6 rounded-xl shadow-lg space-y-5 h-fit">
+                <div class="space-y-1">
+                    <h3 id="form-training-title" class="font-display text-base font-bold text-purple-400">Adicionar Tópico de Treino</h3>
+                    <p class="text-[11px] text-muted-foreground">Ensina conteúdos teóricos e directrizes ao Sekulo para fundamentar os simulados e os roadmaps dos estudantes.</p>
+                </div>
+
+                <form id="training-form" class="space-y-4">
+                    <input type="hidden" id="training-id" value="0" />
+                    
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="space-y-1.5">
+                            <label for="course-category" class="uppercase-tight text-[9px] text-muted-foreground">Área de Estudos</label>
+                            <select id="course-category" class="input-base text-xs bg-muted/20 w-full" required>
+                                <option value="Engenharia">Engenharias</option>
+                                <option value="Saude">Saúde / Medicina</option>
+                                <option value="Sociais">Ciências Sociais</option>
+                                <option value="Economicas">Economia / Gestão</option>
+                            </select>
+                        </div>
+                        
+                        <div class="space-y-1.5">
+                            <label for="specific-course" class="uppercase-tight text-[9px] text-muted-foreground">Curso Alvo</label>
+                            <input type="text" id="specific-course" placeholder="Ex: Engenharia Informática, Medicina, Direito..." class="input-base text-xs bg-muted/20" required />
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label for="topic-title" class="uppercase-tight text-[9px] text-muted-foreground">Título do Tópico</label>
+                            <input type="text" id="topic-title" placeholder="Ex: Matrizes e Determinantes, Citologia, etc." class="input-base text-xs bg-muted/20" required />
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="topic-content" class="uppercase-tight text-[9px] text-muted-foreground">Conteúdo Teórico / Fórmulas (Contexto para Gemini)</label>
+                        <textarea id="topic-content" rows="8" placeholder="Escreve resumos teóricos, conceitos chave ou fórmulas para guiar o Sekulo na geração automática de quizzes, mapas mentais, simulados e descrições do roadmap para este curso..." class="input-base text-xs bg-muted/20 h-auto p-3 resize-y" required></textarea>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-2">
+                        <button type="button" id="btn-clear-training" class="w-1/3 py-2.5 border border-border text-muted-foreground hover:text-foreground text-xs rounded transition-colors uppercase font-semibold">
+                            Limpar
+                        </button>
+                        <button type="submit" id="btn-save-training" class="w-2/3 py-2.5 btn-primary text-xs bg-purple-600 hover:bg-purple-500 text-white rounded transition-colors uppercase font-semibold border-0">
+                            Guardar Tópico
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Training List (7/12 columns) -->
+            <div class="lg:col-span-7 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-display text-base font-bold">Conteúdos Teóricos Ativos</h3>
+                    <input type="text" id="training-search" placeholder="Filtrar tópicos..." class="input-base text-[11px] bg-card/60 max-w-xs h-9" />
+                </div>
+
+                <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2" id="training-list-container">
+                    <!-- Dynamic List of Training content -->
+                    <p class="text-xs text-muted-foreground italic text-center py-8">Carregando conteúdos de treino...</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- EDIT USER MODAL -->
+    <div id="edit-user-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-card border border-border rounded-xl max-w-md w-full p-6 space-y-5 shadow-2xl relative">
+            <div class="space-y-1">
+                <h3 class="font-display text-base font-bold text-indigo-400">Editar Estudante</h3>
+                <p class="text-[11px] text-muted-foreground">Atualiza os dados de acesso, estado de ativação e função do utilizador.</p>
+            </div>
+
+            <form id="edit-user-form" class="space-y-4">
+                <input type="hidden" id="edit-user-id" />
+                
+                <div class="space-y-1.5">
+                    <label for="edit-display-name" class="uppercase-tight text-[9px] text-muted-foreground">Nome Completo</label>
+                    <input type="text" id="edit-display-name" class="input-base text-xs" required />
+                </div>
+                
+                <div class="space-y-1.5">
+                    <label for="edit-email" class="uppercase-tight text-[9px] text-muted-foreground">E-mail</label>
+                    <input type="email" id="edit-email" class="input-base text-xs" required />
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="edit-phone" class="uppercase-tight text-[9px] text-muted-foreground">Nº de Telefone</label>
+                    <input type="text" id="edit-phone" class="input-base text-xs" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label for="edit-role" class="uppercase-tight text-[9px] text-muted-foreground">Função / Nível</label>
+                        <select id="edit-role" class="input-base text-xs">
+                            <option value="user">Estudante (User)</option>
+                            <option value="admin">Administrador (Admin)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="edit-active" class="uppercase-tight text-[9px] text-muted-foreground">Estado</label>
+                        <select id="edit-active" class="input-base text-xs">
+                            <option value="1">Ativo</option>
+                            <option value="0">Inativo/Pendente</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button type="button" id="btn-close-modal" class="w-1/2 py-2 border border-border text-muted-foreground hover:text-foreground text-xs rounded transition-colors uppercase font-semibold">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="w-1/2 py-2 btn-primary text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded transition-colors uppercase font-semibold border-0">
+                        Guardar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ACTIVATION LINK MODAL -->
+    <div id="link-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-card border border-border rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="space-y-1">
+                <h3 class="font-display text-base font-bold text-success flex items-center gap-2">
+                    <span>🔗</span> Link de Ativação Gerado
+                </h3>
+                <p class="text-[11px] text-muted-foreground">Copia o link abaixo ou envia-o directamente para o WhatsApp do estudante para ativar a conta após receberes o comprovativo.</p>
+            </div>
+
+            <div class="space-y-2">
+                <div class="bg-muted/40 border border-border rounded p-3 select-all font-mono text-[10px] text-foreground break-all" id="activation-link-text">
+                    Carregando link...
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+                <button type="button" id="btn-close-link-modal" class="w-1/3 py-2 border border-border text-muted-foreground hover:text-foreground text-xs rounded transition-colors uppercase font-semibold">
+                    Fechar
+                </button>
+                <button type="button" id="btn-copy-link" class="w-1/3 py-2 btn-primary text-xs bg-indigo-600 text-white hover:bg-indigo-500 rounded border-0 uppercase font-semibold">
+                    Copiar
+                </button>
+                <a id="btn-wa-link" href="#" target="_blank" class="w-1/3 py-2 btn-primary text-xs bg-success text-white hover:bg-success/90 rounded border-0 uppercase font-semibold text-center flex items-center justify-center">
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-[10px] text-muted-foreground border-t border-border mt-12 max-w-7xl mx-auto w-full">
+        Jango+ Sekulo Admin © 2026. Gestão inteligente do conhecimento.
+    </footer>
+
+    <!-- Script Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verify Authentication & Get Admin Data
+            let currentAdmin = null;
+            try {
+                const meRes = await fetch('../backend/api/users/me.php');
+                if (meRes.status === 401) {
+                    window.location.href = '../index.html';
+                    return;
+                }
+                const meData = await meRes.json();
+                if (meData.success) {
+                    if (meData.user.role !== 'admin') {
+                        window.location.href = '../utente/dashboard.html';
+                        return;
+                    }
+                    currentAdmin = meData.user;
+                    document.getElementById('admin-name').textContent = meData.user.display_name;
+                } else {
+                    window.location.href = '../index.html';
+                    return;
+                }
+            } catch (err) {
+                console.error("Erro na validação de login admin:", err);
+                window.location.href = '../index.html';
+                return;
+            }
+
+            // Tab Switching Logic
+            const tabUsersBtn = document.getElementById('tab-users-btn');
+            const tabTrainingBtn = document.getElementById('tab-training-btn');
+            const sectionUsers = document.getElementById('section-users');
+            const sectionTraining = document.getElementById('section-training');
+
+            tabUsersBtn.addEventListener('click', () => {
+                tabUsersBtn.classList.add('active-tab');
+                tabTrainingBtn.classList.remove('active-tab');
+                sectionUsers.classList.remove('hidden');
+                sectionTraining.classList.add('hidden');
+            });
+
+            tabTrainingBtn.addEventListener('click', () => {
+                tabTrainingBtn.classList.add('active-tab');
+                tabUsersBtn.classList.remove('active-tab');
+                sectionTraining.classList.remove('hidden');
+                sectionUsers.classList.add('hidden');
+                loadTrainingList();
+            });
+
+            // LOGOUT BUTTON
+            document.getElementById('logout-btn').addEventListener('click', async () => {
+                try {
+                    await fetch('../backend/api/auth/logout.php', { method: 'POST' });
+                    window.location.href = '../index.html';
+                } catch (err) {
+                    console.error('Erro ao sair:', err);
+                }
+            });
+
+            // -----------------------------------------------------------------
+            // UTENTE TAB LOGIC (CRUD & LISTING)
+            // -----------------------------------------------------------------
+            let allUsers = [];
+            const usersTableBody = document.getElementById('users-table-body');
+            const userSearchInput = document.getElementById('user-search');
+
+            async function loadUsers() {
+                try {
+                    const res = await fetch('../backend/api/admin/users.php');
+                    const data = await res.json();
+                    
+                    if (data && data.success) {
+                        allUsers = data.users;
+                        renderUsersTable(allUsers);
+                        updateSummaryStats(allUsers);
+                    } else {
+                        usersTableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-destructive">Erro: ${data.error}</td></tr>`;
+                    }
+                } catch (err) {
+                    console.error("Erro ao obter utilizadores:", err);
+                    usersTableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-destructive">Erro de ligação ao servidor.</td></tr>`;
+                }
+            }
+
+            function updateSummaryStats(users) {
+                document.getElementById('stat-total-users').textContent = users.length;
+                const active = users.filter(u => parseInt(u.is_active) === 1).length;
+                document.getElementById('stat-active-users').textContent = active;
+                document.getElementById('stat-pending-users').textContent = users.length - active;
+            }
+
+            function renderUsersTable(usersList) {
+                usersTableBody.innerHTML = '';
+                if (usersList.length === 0) {
+                    usersTableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-muted-foreground italic">Nenhum utilizador encontrado.</td></tr>`;
+                    return;
+                }
+
+                usersList.forEach(u => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-muted/10 transition-colors';
+                    
+                    const onboardedText = u.onboarded_at ? 'Onboarding feito' : 'Pendente';
+                    const onboardedClass = u.onboarded_at ? 'text-indigo-400 font-semibold' : 'text-muted-foreground';
+                    const statusClass = parseInt(u.is_active) === 1 
+                        ? 'bg-success/15 text-success border border-success/30' 
+                        : 'bg-warning/15 text-warning border border-warning/30';
+                    const statusLabel = parseInt(u.is_active) === 1 ? 'Activo' : 'Pendente';
+                    
+                    tr.innerHTML = `
+                        <td class="p-4">
+                            <div class="font-display font-bold text-sm text-foreground">${u.display_name}</div>
+                            <div class="text-[10px] text-muted-foreground mt-0.5">${u.role === 'admin' ? '🛡️ Administrador' : 'Estudante'}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-mono">${u.email || '—'}</div>
+                            <div class="font-mono text-muted-foreground text-[10px] mt-0.5">${u.phone || '—'}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-0.5 text-[10px] rounded uppercase tracking-wider font-semibold font-mono ${statusClass}">
+                                ${statusLabel}
+                            </span>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-semibold text-primary font-mono text-xs">${u.xp_total || 0} XP <span class="text-muted-foreground font-normal">(${u.league || 'bronze'})</span></div>
+                            <div class="text-[10px] ${onboardedClass} mt-0.5">${onboardedText}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center justify-center gap-2">
+                                <button class="btn-edit px-2.5 py-1 bg-muted/40 border border-border hover:border-indigo-500 rounded text-[10px] uppercase font-semibold transition-colors" data-id="${u.id}">Editar</button>
+                                <button class="btn-toggle-status px-2.5 py-1 ${parseInt(u.is_active) === 1 ? 'bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20' : 'bg-success/10 border-success/20 text-success hover:bg-success/20'} border rounded text-[10px] uppercase font-semibold transition-colors" data-id="${u.id}">
+                                    ${parseInt(u.is_active) === 1 ? 'Desativar' : 'Activar'}
+                                </button>
+                                <button class="btn-activation-link px-2.5 py-1 bg-indigo-900/40 border border-indigo-500/30 text-indigo-400 hover:bg-indigo-600 hover:text-white rounded text-[10px] uppercase font-semibold transition-colors" data-id="${u.id}">Link</button>
+                                <button class="btn-delete px-2.5 py-1 bg-red-950/20 border border-red-500/20 text-red-500 hover:bg-red-600 hover:text-white rounded text-[10px] uppercase font-semibold transition-colors" data-id="${u.id}">Apagar</button>
+                            </div>
+                        </td>
+                    `;
+                    usersTableBody.appendChild(tr);
+                });
+
+                // Attach Event Listeners
+                document.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const uid = parseInt(e.target.getAttribute('data-id'));
+                        openEditUserModal(uid);
+                    });
+                });
+
+                document.querySelectorAll('.btn-toggle-status').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const uid = parseInt(e.target.getAttribute('data-id'));
+                        await toggleUserActivation(uid);
+                    });
+                });
+
+                document.querySelectorAll('.btn-activation-link').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const uid = parseInt(e.target.getAttribute('data-id'));
+                        await showActivationLink(uid);
+                    });
+                });
+
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        if (confirm("Tem certeza absoluta de que deseja excluir permanentemente este estudante?")) {
+                            const uid = parseInt(e.target.getAttribute('data-id'));
+                            await deleteUser(uid);
+                        }
+                    });
+                });
+            }
+
+            // Search Users Filter
+            userSearchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase().trim();
+                if (!term) {
+                    renderUsersTable(allUsers);
+                    return;
+                }
+                const filtered = allUsers.filter(u => 
+                    u.display_name.toLowerCase().includes(term) ||
+                    (u.email && u.email.toLowerCase().includes(term)) ||
+                    (u.phone && u.phone.includes(term))
+                );
+                renderUsersTable(filtered);
+            });
+
+            // Toggle active status API
+            async function toggleUserActivation(userId) {
+                try {
+                    const response = await fetch('../backend/api/admin/users.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'toggle_active', user_id: userId })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        loadUsers();
+                    } else {
+                        alert(data.error);
+                    }
+                } catch (err) {
+                    console.error("Erro ao alterar estado:", err);
+                }
+            }
+
+            // Delete User API
+            async function deleteUser(userId) {
+                try {
+                    const response = await fetch('../backend/api/admin/users.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete', user_id: userId })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        loadUsers();
+                    } else {
+                        alert(data.error);
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            // Get activation link and show modal
+            const linkModal = document.getElementById('link-modal');
+            const activationLinkText = document.getElementById('activation-link-text');
+            const btnCopyLink = document.getElementById('btn-copy-link');
+            const btnWaLink = document.getElementById('btn-wa-link');
+
+            async function showActivationLink(userId) {
+                try {
+                    const response = await fetch('../backend/api/admin/users.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'generate_link', user_id: userId })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        const link = data.activation_link;
+                        activationLinkText.textContent = link;
+                        
+                        // Setup WA Message to user
+                        const targetUser = allUsers.find(u => u.id === userId);
+                        const waMsg = `Olá ${targetUser.display_name}! O teu comprovativo de pagamento foi recebido com sucesso no Jango+ Sekulo. A tua conta foi ativada. Acede ao link abaixo para validar a ativação e iniciar o teu plano:\n\n${link}`;
+                        
+                        btnCopyLink.onclick = () => {
+                            navigator.clipboard.writeText(link);
+                            alert('Link copiado para a área de transferência!');
+                        };
+                        
+                        const phoneSanitized = targetUser.phone ? targetUser.phone.replace(/\D/g, '') : '';
+                        const waPhone = phoneSanitized.startsWith('244') ? phoneSanitized : `244${phoneSanitized}`;
+                        btnWaLink.href = `https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}`;
+                        
+                        linkModal.classList.remove('hidden');
+                    } else {
+                        alert(data.error);
+                    }
+                } catch (err) {
+                    console.error("Erro ao gerar link de ativação:", err);
+                }
+            }
+
+            document.getElementById('btn-close-link-modal').addEventListener('click', () => {
+                linkModal.classList.add('hidden');
+            });
+
+            // EDIT USER MODAL FORM LOGIC
+            const editModal = document.getElementById('edit-user-modal');
+            const editForm = document.getElementById('edit-user-form');
+            const editUserId = document.getElementById('edit-user-id');
+            const editDisplayName = document.getElementById('edit-display-name');
+            const editEmail = document.getElementById('edit-email');
+            const editPhone = document.getElementById('edit-phone');
+            const editRole = document.getElementById('edit-role');
+            const editActive = document.getElementById('edit-active');
+
+            function openEditUserModal(userId) {
+                const user = allUsers.find(u => u.id === userId);
+                if (!user) return;
+                
+                editUserId.value = user.id;
+                editDisplayName.value = user.display_name;
+                editEmail.value = user.email || '';
+                editPhone.value = user.phone || '';
+                editRole.value = user.role;
+                editActive.value = user.is_active;
+
+                editModal.classList.remove('hidden');
+            }
+
+            document.getElementById('btn-close-modal').addEventListener('click', () => {
+                editModal.classList.add('hidden');
+            });
+
+            editForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const userId = parseInt(editUserId.value);
+                const display_name = editDisplayName.value.trim();
+                const email = editEmail.value.trim();
+                const phone = editPhone.value.trim();
+                const role = editRole.value;
+                const is_active = parseInt(editActive.value);
+
+                try {
+                    const response = await fetch('../backend/api/admin/users.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'update',
+                            user_id: userId,
+                            display_name,
+                            email,
+                            phone,
+                            role,
+                            is_active
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        editModal.classList.add('hidden');
+                        loadUsers();
+                    } else {
+                        alert(data.error || 'Erro ao atualizar dados');
+                    }
+                } catch (err) {
+                    console.error("Erro de ligação ao servidor:", err);
+                }
+            });
+
+            // Initial load of users list
+            loadUsers();
+
+
+            // -----------------------------------------------------------------
+            // SEKULO TRAINING TAB LOGIC (CRUD & LISTING)
+            // -----------------------------------------------------------------
+            const trainingForm = document.getElementById('training-form');
+            const trainingIdInput = document.getElementById('training-id');
+            const courseCategorySelect = document.getElementById('course-category');
+            const specificCourseInput = document.getElementById('specific-course');
+            const topicTitleInput = document.getElementById('topic-title');
+            const topicContentTextarea = document.getElementById('topic-content');
+            const btnClearTraining = document.getElementById('btn-clear-training');
+            const trainingListContainer = document.getElementById('training-list-container');
+            const trainingSearchInput = document.getElementById('training-search');
+            
+            let allTraining = [];
+
+            async function loadTrainingList() {
+                try {
+                    const res = await fetch('../backend/api/admin/training.php');
+                    const data = await res.json();
+                    
+                    if (data && data.success) {
+                        allTraining = data.materials;
+                        renderTrainingList(allTraining);
+                        document.getElementById('stat-total-training').textContent = allTraining.length;
+                    } else {
+                        trainingListContainer.innerHTML = `<p class="text-xs text-destructive text-center py-4">Erro ao carregar tópicos: ${data.error}</p>`;
+                    }
+                } catch (err) {
+                    console.error("Erro ao carregar treino do Sekulo:", err);
+                    trainingListContainer.innerHTML = `<p class="text-xs text-destructive text-center py-4">Erro de ligação ao servidor.</p>`;
+                }
+            }
+
+            function renderTrainingList(list) {
+                trainingListContainer.innerHTML = '';
+                if (list.length === 0) {
+                    trainingListContainer.innerHTML = `<p class="text-xs text-muted-foreground italic text-center py-8">Nenhum tópico de treino cadastrado.</p>`;
+                    return;
+                }
+
+                list.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-card border border-border/80 p-4 rounded-lg space-y-3 hover:border-purple-500/50 transition-colors relative';
+                    
+                    // Simple short snippet for display
+                    const contentSnippet = item.content.length > 250 ? item.content.substring(0, 250) + '...' : item.content;
+                    
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 bg-purple-900/40 text-purple-300 border border-purple-800/50 rounded text-[9px] uppercase tracking-wider font-semibold font-mono">
+                                        ${item.course_category}
+                                    </span>
+                                    <span class="text-[10px] text-muted-foreground font-mono">
+                                        ${item.specific_course}
+                                    </span>
+                                </div>
+                                <h4 class="font-display font-bold text-sm text-foreground mt-1.5">${item.topic}</h4>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button class="btn-edit-training text-xs text-purple-400 hover:text-purple-300 font-semibold" data-id="${item.id}">Editar</button>
+                                <button class="btn-delete-training text-xs text-destructive hover:underline font-semibold" data-id="${item.id}">Apagar</button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">${contentSnippet}</p>
+                    `;
+                    trainingListContainer.appendChild(div);
+                });
+
+                // Attach Action Listeners
+                document.querySelectorAll('.btn-edit-training').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const tid = parseInt(e.target.getAttribute('data-id'));
+                        editTrainingItem(tid);
+                    });
+                });
+
+                document.querySelectorAll('.btn-delete-training').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        if (confirm("Tens a certeza de que desejas apagar este conteúdo de treino do Sekulo?")) {
+                            const tid = parseInt(e.target.getAttribute('data-id'));
+                            await deleteTrainingItem(tid);
+                        }
+                    });
+                });
+            }
+
+            // Filter training topics list
+            trainingSearchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase().trim();
+                if (!term) {
+                    renderTrainingList(allTraining);
+                    return;
+                }
+                const filtered = allTraining.filter(item => 
+                    item.topic.toLowerCase().includes(term) ||
+                    item.content.toLowerCase().includes(term) ||
+                    item.specific_course.toLowerCase().includes(term) ||
+                    item.course_category.toLowerCase().includes(term)
+                );
+                renderTrainingList(filtered);
+            });
+
+            function editTrainingItem(id) {
+                const item = allTraining.find(t => t.id === id);
+                if (!item) return;
+
+                trainingIdInput.value = item.id;
+                courseCategorySelect.value = item.course_category;
+                specificCourseInput.value = item.specific_course;
+                topicTitleInput.value = item.topic;
+                topicContentTextarea.value = item.content;
+
+                document.getElementById('form-training-title').textContent = 'Editar Tópico de Treino';
+                document.getElementById('btn-save-training').textContent = 'Atualizar Tópico';
+            }
+
+            btnClearTraining.addEventListener('click', () => {
+                resetTrainingForm();
+            });
+
+            function resetTrainingForm() {
+                trainingIdInput.value = '0';
+                courseCategorySelect.value = 'Engenharia';
+                specificCourseInput.value = '';
+                topicTitleInput.value = '';
+                topicContentTextarea.value = '';
+
+                document.getElementById('form-training-title').textContent = 'Adicionar Tópico de Treino';
+                document.getElementById('btn-save-training').textContent = 'Guardar Tópico';
+            }
+
+            trainingForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const id = parseInt(trainingIdInput.value);
+                const category = courseCategorySelect.value;
+                const specificCourse = specificCourseInput.value.trim();
+                const topic = topicTitleInput.value.trim();
+                const content = topicContentTextarea.value.trim();
+
+                try {
+                    const response = await fetch('../backend/api/admin/training.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'save',
+                            id,
+                            course_category: category,
+                            specific_course: specificCourse,
+                            topic,
+                            content
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        resetTrainingForm();
+                        loadTrainingList();
+                    } else {
+                        alert(data.error || 'Erro ao guardar tópico de treino.');
+                    }
+                } catch (err) {
+                    console.error("Erro ao enviar dados de treino:", err);
+                }
+            });
+
+            async function deleteTrainingItem(id) {
+                try {
+                    const response = await fetch('../backend/api/admin/training.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete', id })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        loadTrainingList();
+                    } else {
+                        alert(data.error);
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+        });
+    </script>
+</body>
+</html>

@@ -48,6 +48,15 @@ try {
     $stmtOnboarding->execute([$userId]);
     $onboarding = $stmtOnboarding->fetch();
 
+    // 4. Obter resultados do diagnóstico
+    $stmtDiag = $pdo->prepare('
+        SELECT weak_subjects, strong_subjects, raw_scores 
+        FROM diagnostic_results 
+        WHERE user_id = ?
+    ');
+    $stmtDiag->execute([$userId]);
+    $diag = $stmtDiag->fetch();
+
     echo json_encode([
         'success' => true,
         'stats' => [
@@ -59,7 +68,12 @@ try {
             'course_category' => $onboarding['course_category'] ?? 'Não definida',
             'specific_course' => $onboarding['specific_course'] ?? 'Não definido',
             'study_hours_day' => floatval($onboarding['study_hours_day'] ?? 2.0),
-            'motivation' => $onboarding['motivation'] ?? ''
+            'motivation' => $onboarding['motivation'] ?? '',
+            'diagnostic' => $diag ? [
+                'weak_subjects' => json_decode($diag['weak_subjects'], true),
+                'strong_subjects' => json_decode($diag['strong_subjects'], true),
+                'raw_scores' => json_decode($diag['raw_scores'], true)
+            ] : null
         ]
     ]);
 
